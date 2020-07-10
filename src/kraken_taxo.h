@@ -1,3 +1,6 @@
+#ifndef KRAKEN_TAXO_H
+#define KRAKEN_TAXO_H
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>                         
 #include <string.h>
 #include <stdint.h>                  
@@ -46,3 +49,4 @@ uint64_t get_internal_id(uint64_t external_id, Taxonomy const* const tx);
 bool is_a_parent_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx);
 bool is_a_child_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx);
 char const* const tx_taxid_name(uint64_t taxid, Taxonomy const* const tx);
+#endif
