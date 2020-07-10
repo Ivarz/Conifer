@@ -7,7 +7,7 @@ make
 
 
 # Basic usage
-To use this tool you need output file from kraken2 (usually ends with `.out.txt`) and taxonomy database file (`taxo.k2d`).
+To use this tool you need output file from [kraken2](https://github.com/DerrickWood/kraken2) (usually ends with `.out.txt`) and taxonomy database file (`taxo.k2d`).
 The following command will calculate confidence score for each classified read. For paired end reads average of the two reads is reported.
 ```
 ./conifer -i test_files/example.out.txt -d test_files/taxo.k2d
