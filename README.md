@@ -13,7 +13,7 @@ The following command will calculate confidence score for each classified read. 
 ./conifer -i test_files/example.out.txt -d test_files/taxo.k2d
 ```
 
-To calculate confidence square first three quartiles use `-s` option:
+To calculate first three quartiles of the confidence score for each assigned taxonomy use `-s` option:
 ```
 ./conifer -s -i test_files/example.out.txt -d test_files/taxo.k2d
 ```
