@@ -23,7 +23,7 @@ int main(int argc, char* argv[argc])
     char* db_name = 0;
     bool summary = false;
     bool all_reads = false;
-    while ((opt = getopt(argc, argv, "i:d:as")) != -1){
+    while ((opt = getopt(argc, argv, "i:d:asp")) != -1){
         switch (opt) {
             case 'i':
                 file_name = strndup(optarg, 1024);
@@ -33,12 +33,9 @@ int main(int argc, char* argv[argc])
                 break;
             case 'a':
                 all_reads = true;
-                summary = false;
                 break;
             case 's':
                 summary = true;
-                all_reads = false;
-                break;
         }
     }
     if (all_reads && summary){
@@ -77,27 +74,38 @@ int main(int argc, char* argv[argc])
         if (krp->taxid > 0){
             krp = kraken_adjust_taxonomy(krp, tx);
             float avg_kmer_frac = -1.0f;
+            float kmer_frac1 = -1.0f;
+            float kmer_frac2 = -1.0f;
             if (krp->paired){
-                float kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
-                float kmer_frac2 = krp->read2_kmers->size ? kmer_fraction(krp->read2_kmers, krp->taxid) : -1.0f;
+                kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
+                kmer_frac2 = krp->read2_kmers->size ? kmer_fraction(krp->read2_kmers, krp->taxid) : -1.0f;
                 avg_kmer_frac = kmer_frac1 == -1.0f && kmer_frac2 == -1.0f ? 0.0f :
                     (kmer_frac1 >= 0.0f && kmer_frac2 < 0.0f) ? kmer_frac1 :
                     (kmer_frac1 < 0.0f && kmer_frac2 >= 0.0f) ? kmer_frac2 :
                     ((kmer_frac1 + kmer_frac2) / 2.0f);
             } else {
-                float kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
+                kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
                 avg_kmer_frac = kmer_frac1 == -1.0f ? 0.0f : kmer_frac1;
             }
             if (summary){
                 txd_add_data(txd, krp->taxid, avg_kmer_frac);
             } else {
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
-                printf("%s\t%.4f\n", line, avg_kmer_frac);
+                if (krp->paired){
+                    printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
+                } else {
+                    printf("%s\t%.4f\n", line, avg_kmer_frac);
+                }
             }
         } else {
             if(all_reads){
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
-                printf("%s\t%.4f\n", line, 0.0f);
+                if (krp->paired){
+                    printf("%s\t%.4f\t%.4f\t%.4f\n", line, 0.0f, 0.0f, 0.0f);
+                } else {
+                    printf("%s\t%.4f\n", line, 0.0f);
+                }
+
             }
         }
         krp = kraken_reset(krp);
