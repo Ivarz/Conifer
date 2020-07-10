@@ -1,0 +1,9 @@
+[submodule "Unity"]
+	path = Unity
+	url = https://github.com/ThrowTheSwitch/Unity
+[submodule "third_party/Unity"]
+	path = third_party/Unity
+	url = https://github.com/ThrowTheSwitch/Unity
+[submodule "third_party/uthash"]
+	path = third_party/uthash
+	url = https://github.com/troydhanson/uthash

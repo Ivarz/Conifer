@@ -2,18 +2,38 @@
 #include <getopt.h>
 #include <errno.h>
 
+void print_usage()
+{
+    fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n\n");
+    fprintf(stderr, "\t-a\t\toutput all reads (including unclassified)\n");
+    fprintf(stderr, "\t-s\t\toutput summary statistics for each taxonomy\n");
+    return;
+}
+
 int main(int argc, char* argv[argc])
 {
+    if (argc < 3){
+        print_usage();
+        return EXIT_FAILURE;
+    }
     int opt;
     char* file_name = 0;
     char* db_name = 0;
-    while ((opt = getopt(argc, argv, "i:d:")) != -1){
+    bool summary = false;
+    bool all_reads = false;
+    while ((opt = getopt(argc, argv, "i:d:as")) != -1){
         switch (opt) {
             case 'i':
                 file_name = strndup(optarg, 1024);
                 break;
             case 'd':
                 db_name = strndup(optarg, 1024);
+                break;
+            case 'a':
+                all_reads = true;
+                break;
+            case 's':
+                summary = true;
                 break;
         }
     }
@@ -43,8 +63,6 @@ int main(int argc, char* argv[argc])
     int counter = 0;
     KrakenRec* krp = kraken_create(true);
     TaxIdData* txd = txd_create();
-    bool summary = false;
-    bool all_summary = false;
     while(fgets(line, sizeof(line), fh)){
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
@@ -69,7 +87,7 @@ int main(int argc, char* argv[argc])
                 printf("%s\t%.4f\n", line, avg_kmer_frac);
             }
         } else {
-            if(all_summary){
+            if(all_reads){
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
                 printf("%s\t%.4f\n", line, 0.0f);
             }
