@@ -11,8 +11,8 @@
 #include "src/kraken_taxo.h"
 
 #define LINE_SIZE 4096
-#define KMER_COUNT_SIZE 8
-#define TAXID_KMER_DATA_SIZE 8
+#define KMER_COUNT_SIZE 1024
+#define TAXID_KMER_DATA_SIZE 1024
 
 inline
 void check_ulong_overflow(uint64_t value)
