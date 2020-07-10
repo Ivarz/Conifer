@@ -2,7 +2,7 @@
 #include <getopt.h>
 #include <errno.h>
 
-void print_usage()
+void print_usage(void)
 {
     fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n\n");
     fprintf(stderr, "\t-a\t\toutput all reads (including unclassified)\n");
@@ -31,26 +31,32 @@ int main(int argc, char* argv[argc])
                 break;
             case 'a':
                 all_reads = true;
+                summary = false;
                 break;
             case 's':
                 summary = true;
+                all_reads = false;
                 break;
         }
     }
+    if (all_reads && summary){
+        fprintf(stderr, "Options -a or -s are mutually exclusive\n");
+        return EXIT_FAILURE;
+    }
     if (file_name == NULL){
-        printf("Provide input file name \n");
+        fprintf(stderr, "Provide input file name \n");
         return EXIT_FAILURE;
     }
     if (db_name == NULL){
-        printf("Provide kraken2 taxo.k2d filename\n");
+        fprintf(stderr, "Provide kraken2 taxo.k2d filename\n");
         return EXIT_FAILURE;
     }
 
     FILE* fh = fopen(file_name, "r");
 
     if (fh == NULL){
-        printf("Can't open %s\n", file_name);
-        printf("%s\n", strerror(errno));
+        fprintf(stderr, "Can't open %s\n", file_name);
+        fprintf(stderr, "%s\n", strerror(errno));
         return EXIT_FAILURE;
     }
     

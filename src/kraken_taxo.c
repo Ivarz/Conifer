@@ -73,12 +73,13 @@ Taxonomy* tx_create(char const* fname)
         fclose(taxo_fh);
         return 0;
     }
-    char magic[strlen(FILE_MAGIC)];
-    memset(magic, 0, strlen(FILE_MAGIC));
+    char magic[strlen(FILE_MAGIC) + 1];
+    memset(magic, 0, strlen(FILE_MAGIC) + 1);
 
-    fread(magic, 1, sizeof(magic),taxo_fh);
+    fread(magic, 1, strnlen(FILE_MAGIC,16), taxo_fh);
     if (strcmp(magic, FILE_MAGIC) != 0){
-        printf("malformed taxonomy file\n");
+        printf("malformed taxonomy file:\n");
+        printf("%s\n", magic);
         fclose(taxo_fh);
         return 0;
     }
