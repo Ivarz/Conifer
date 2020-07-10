@@ -4,9 +4,11 @@
 
 void print_usage(void)
 {
-    fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n\n");
+    fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n");
     fprintf(stderr, "\t-a\t\toutput all reads (including unclassified)\n");
     fprintf(stderr, "\t-s\t\toutput summary statistics for each taxonomy\n");
+    fprintf(stderr, "\n");
+
     return;
 }
 

@@ -333,7 +333,7 @@ void test_quartiles()
 
 void test_parents()
 {
-    Taxonomy* tx = tx_create("kraken2_db/taxo.k2d");
+    Taxonomy* tx = tx_create("test_files/taxo.k2d");
     TEST_ASSERT(is_a_parent_of_b(9605, 9606, tx));
     TEST_ASSERT(is_a_parent_of_b(10088, 10090, tx));
     TEST_ASSERT(is_a_parent_of_b(91347, 562, tx));
