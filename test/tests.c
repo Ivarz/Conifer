@@ -292,10 +292,24 @@ void test_quartiles_2()
     txd_add_data(txd, 1, 0.8f);
     Quartiles qs = get_quartiles(txd->data[0]);
     TEST_ASSERT_EQUAL(qs.q1, 250);
-    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 450);
-    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 650);
+    TEST_ASSERT_EQUAL(qs.q2, 450);
+    TEST_ASSERT_EQUAL(qs.q3, 650);
     txd_destroy(txd);
 }
+
+void test_quartiles_3()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 342);
+    txd_add_data(txd, 1, 342);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 342);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 342);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 342);
+    txd_destroy(txd);
+}
+//C       GSGHC:00883:04911       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
+//C       GSGHC:09741:12490       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
 
 
 
@@ -367,6 +381,7 @@ int main()
     RUN_TEST(test_avg_kmer_fraction_r2_missing_no_space);
     RUN_TEST(test_quartiles_1);
     RUN_TEST(test_quartiles_2);
+    RUN_TEST(test_quartiles_3);
     RUN_TEST(test_parents);
     RUN_TEST(test_kmc_create_ambiguous);
     /*RUN_TEST(test_quartiles);*/
