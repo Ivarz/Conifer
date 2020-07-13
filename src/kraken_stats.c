@@ -430,26 +430,70 @@ Quartiles get_quartiles_from_even(FloatHist* fh, int64_t total_kmers)
         , q3_thresh1
         , q3_thresh2
     };
+    printf("%f\t%f\t%f\t%f\t%f\t%f\n",
+        q1_thresh1
+        , q1_thresh2
+        , q2_thresh1
+        , q2_thresh2
+        , q3_thresh1
+        , q3_thresh2
+        );
     for ( int i = 0; i < fh->size; i++){
         cumsum += fh->fraction_counts[i];
         for (int j = 0; j < 6; j++){
             if (cumsum >= q_threshes[j] && q_vals[j] == -1.0f) {
                 q_vals[j] = i;
+                printf("q_vals[%d] = %d\n", j, i);
             }
         }
     }
+    for (int j = 1; j < 6; j++){
+        if (q_vals[j] == -1.0f) {
+            q_vals[j] = q_vals[j-1];
+            printf("q_vals[%d] = %f\n", j, q_vals[j-1]);
+        }
+
+    }
+        
+
     result.q1 = (q_vals[0] + q_vals[1]) / 2.0f;
     result.q2 = (q_vals[2] + q_vals[3]) / 2.0f;
     result.q3 = (q_vals[4] + q_vals[5]) / 2.0f;
     return result;
 }
 
-Quartiles get_quartiles(FloatHist* fh)
+Quartiles get_nearest_rank_quartiles(FloatHist* fh)
 {
     Quartiles result = {-1.0f, -1.0f, -1.0f};
     int64_t total_kmers = fh_sum(fh);
-    result = total_kmers % 2 ? get_quartiles_from_odd(fh, total_kmers) : get_quartiles_from_even(fh, total_kmers);
+
+    int64_t q1_thresh = ceil(25*( (float) total_kmers)/100.0f);
+    int64_t q2_thresh = ceil(50*( (float) total_kmers)/100.0f);
+    int64_t q3_thresh = ceil(75*( (float) total_kmers)/100.0f);
+
+    int64_t cumsum = 0;
+    for ( int i = 0; i < fh->size; i++){
+        cumsum += fh->fraction_counts[i];
+        if (cumsum >= q1_thresh && result.q1 == -1.0f) {
+            result.q1 = i;
+        }
+        if (cumsum >= q2_thresh && result.q2 == -1.0f) {
+            result.q2 = i;
+        }
+        if (cumsum >= q3_thresh && result.q3 == -1.0f) {
+            result.q3 = i;
+        }
+    }
     return result;
+}
+
+Quartiles get_quartiles(FloatHist* fh)
+{
+    return get_nearest_rank_quartiles(fh);
+    /*Quartiles result = {-1.0f, -1.0f, -1.0f};*/
+    /*int64_t total_kmers = fh_sum(fh);*/
+    /*result = total_kmers % 2 ? get_quartiles_from_odd(fh, total_kmers) : get_quartiles_from_even(fh, total_kmers);*/
+    /*return result;*/
 }
 
 float kmer_fraction(KmerCounts const* const kmcs, uint64_t const taxid)

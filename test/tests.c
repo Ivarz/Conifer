@@ -291,17 +291,17 @@ void test_quartiles_2()
     txd_add_data(txd, 1, 0.7f);
     txd_add_data(txd, 1, 0.8f);
     Quartiles qs = get_quartiles(txd->data[0]);
-    TEST_ASSERT_EQUAL(qs.q1, 250);
-    TEST_ASSERT_EQUAL(qs.q2, 450);
-    TEST_ASSERT_EQUAL(qs.q3, 650);
+    TEST_ASSERT_EQUAL(qs.q1, 200);
+    TEST_ASSERT_EQUAL(qs.q2, 400);
+    TEST_ASSERT_EQUAL(qs.q3, 600);
     txd_destroy(txd);
 }
 
 void test_quartiles_3()
 {
     TaxIdData* txd = txd_create();
-    txd_add_data(txd, 1, 342);
-    txd_add_data(txd, 1, 342);
+    txd_add_data(txd, 1, 0.342);
+    txd_add_data(txd, 1, 0.342);
     Quartiles qs = get_quartiles(txd->data[0]);
     TEST_ASSERT_EQUAL(qs.q1, 342);
     TEST_ASSERT_EQUAL_FLOAT(qs.q2, 342);
@@ -311,6 +311,46 @@ void test_quartiles_3()
 //C       GSGHC:00883:04911       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
 //C       GSGHC:09741:12490       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
 
+void test_quartiles_4()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.03);
+    txd_add_data(txd, 1, 0.06);
+    txd_add_data(txd, 1, 0.07);
+    txd_add_data(txd, 1, 0.08);
+    txd_add_data(txd, 1, 0.08);
+    txd_add_data(txd, 1, 0.10);
+    txd_add_data(txd, 1, 0.13);
+    txd_add_data(txd, 1, 0.15);
+    txd_add_data(txd, 1, 0.16);
+    txd_add_data(txd, 1, 0.20);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 70);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 80);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 150);
+    txd_destroy(txd);
+}
+
+void test_quartiles_5()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.03);
+    txd_add_data(txd, 1, 0.06);
+    txd_add_data(txd, 1, 0.07);
+    txd_add_data(txd, 1, 0.08);
+    txd_add_data(txd, 1, 0.08);
+    txd_add_data(txd, 1, 0.09);
+    txd_add_data(txd, 1, 0.10);
+    txd_add_data(txd, 1, 0.13);
+    txd_add_data(txd, 1, 0.15);
+    txd_add_data(txd, 1, 0.16);
+    txd_add_data(txd, 1, 0.20);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 70);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 90);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 150);
+    txd_destroy(txd);
+}
 
 
 void test_quartiles()
@@ -369,7 +409,7 @@ int main()
     RUN_TEST(test_kraken_fill_read1_empty);
     RUN_TEST(test_kraken_fill_read2_empty);
     RUN_TEST(test_kraken_reset);
-    /*RUN_TEST(test_kraken_fill_taxid_overflow);*/
+    /*[>RUN_TEST(test_kraken_fill_taxid_overflow);<]*/
     RUN_TEST(test_fh_add_1);
     RUN_TEST(test_fh_add_2);
     RUN_TEST(txd_add_taxa_2);
@@ -382,6 +422,8 @@ int main()
     RUN_TEST(test_quartiles_1);
     RUN_TEST(test_quartiles_2);
     RUN_TEST(test_quartiles_3);
+    RUN_TEST(test_quartiles_4);
+    RUN_TEST(test_quartiles_5);
     RUN_TEST(test_parents);
     RUN_TEST(test_kmc_create_ambiguous);
     /*RUN_TEST(test_quartiles);*/
