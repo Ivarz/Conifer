@@ -116,10 +116,14 @@ int main(int argc, char* argv[argc])
     }
 
     if (summary)
-    printf("taxon_name\ttaxid\tQ1\tQ2\tQ3\n");
+    printf("taxon_name\ttaxid\treads\tQ1\tQ2\tQ3\n");
     for (int i=0; i < txd->taxid_size; i++){
         Quartiles qs = get_quartiles(txd->data[i]);
-        printf("%s\t%lu\t%.4f\t%.4f\t%.4f\n", tx_taxid_name(txd->taxids[i], tx), txd->taxids[i], qs.q1/1000.0f, qs.q2/1000.0f, qs.q3/1000.0f);
+        printf("%s\t%lu\t%ld\t%.4f\t%.4f\t%.4f\n"
+                , tx_taxid_name(txd->taxids[i], tx)
+                , txd->taxids[i]
+                , fh_sum(txd->data[i])
+                , qs.q1/1000.0f, qs.q2/1000.0f, qs.q3/1000.0f);
     }
 
     kraken_destroy(krp);
