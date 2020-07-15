@@ -135,7 +135,7 @@ int main(int argc, char* argv[argc])
     }
 
     if (summary)
-    printf("taxon_name\ttaxid\treads\tQ1\tQ2\tQ3\n");
+    printf("taxon_name\ttaxid\treads\tP25\tP50\tP75\n");
     for (int i=0; i < txd->taxid_size; i++){
         Quartiles qs = get_quartiles(txd->data[i]);
         printf("%s\t%lu\t%ld\t%.4f\t%.4f\t%.4f\n"
