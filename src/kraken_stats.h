@@ -102,5 +102,6 @@ float kmer_fraction(KmerCounts const* const kmcs, uint64_t const taxid);
 
 float get_avg_kmer_fraction(KrakenRec* krp);
 KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx);
+KrakenRec* kraken_adjust_taxonomy_nonconflicting(KrakenRec* krp, Taxonomy const* const tx);
 
 #endif

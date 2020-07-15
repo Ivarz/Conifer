@@ -72,7 +72,7 @@ int main(int argc, char* argv[argc])
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
         if (krp->taxid > 0){
-            krp = kraken_adjust_taxonomy(krp, tx);
+            krp = kraken_adjust_taxonomy_nonconflicting(krp, tx);
             float avg_kmer_frac = -1.0f;
             float kmer_frac1 = -1.0f;
             float kmer_frac2 = -1.0f;

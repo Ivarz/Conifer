@@ -541,10 +541,29 @@ KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx)
     } else {
         for (int i=0; i < krp->read1_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx)){
-                /*printf("%lu is parent of %lu\n", krp->taxid, krp->read1_kmers->taxids[i]);*/
                 krp->read1_kmers->taxids[i] = krp->taxid;
-            /*} else {*/
-                /*printf("%lu is not parent of %lu\n", krp->taxid, krp->read1_kmers->taxids[i]);*/
+            }
+        }
+    }
+    return krp;
+}
+KrakenRec* kraken_adjust_taxonomy_nonconflicting(KrakenRec* krp, Taxonomy const* const tx)
+{
+    if (krp->paired){
+        for (int i=0; i < krp->read1_kmers->size; i++){
+            if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read1_kmers->taxids[i], krp->taxid, tx)){
+                krp->read1_kmers->taxids[i] = krp->taxid;
+            }
+        }
+        for (int i=0; i < krp->read2_kmers->size; i++){
+            if (is_a_parent_of_b(krp->taxid, krp->read2_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read2_kmers->taxids[i], krp->taxid, tx)){
+                krp->read2_kmers->taxids[i] = krp->taxid;
+            }
+        }
+    } else {
+        for (int i=0; i < krp->read1_kmers->size; i++){
+            if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read1_kmers->taxids[i], krp->taxid, tx)){
+                krp->read1_kmers->taxids[i] = krp->taxid;
             }
         }
     }
