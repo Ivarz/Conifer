@@ -5,8 +5,10 @@
 void print_usage(void)
 {
     fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n");
-    fprintf(stderr, "\t-a\t\toutput all reads (including unclassified)\n");
-    fprintf(stderr, "\t-s\t\toutput summary statistics for each taxonomy\n");
+    fprintf(stderr, "\t-i,--input\t\tinput file\n");
+    fprintf(stderr, "\t-d,--db\t\tkraken2 taxo.k2d file\n");
+    fprintf(stderr, "\t-a,--all\t\toutput all reads (including unclassified)\n");
+    fprintf(stderr, "\t-s,--summary\t\toutput summary statistics for each taxonomy\n");
     fprintf(stderr, "\n");
 
     return;
@@ -14,6 +16,15 @@ void print_usage(void)
 
 int main(int argc, char* argv[argc])
 {
+    static struct option long_opts[] =
+    {
+        {"input", required_argument, 0, 'i'}
+        , {"db", required_argument, 0, 'd'}
+        , {"all", no_argument, 0, 'a'}
+        , {"summary", no_argument, 0, 's'}
+        , {"non_conflicting", no_argument, 0, 'n'}
+
+    };
     if (argc < 3){
         print_usage();
         return EXIT_FAILURE;
@@ -23,7 +34,9 @@ int main(int argc, char* argv[argc])
     char* db_name = 0;
     bool summary = false;
     bool all_reads = false;
-    while ((opt = getopt(argc, argv, "i:d:asp")) != -1){
+    bool non_conflicting = false;
+    int l_idx = 0;
+    while ((opt = getopt_long(argc, argv, "i:d:nbasp", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'i':
                 file_name = strndup(optarg, 1024);
@@ -36,6 +49,10 @@ int main(int argc, char* argv[argc])
                 break;
             case 's':
                 summary = true;
+                break;
+            case 'n':
+                non_conflicting = true;
+                break;
         }
     }
     if (all_reads && summary){
@@ -68,11 +85,13 @@ int main(int argc, char* argv[argc])
     int counter = 0;
     KrakenRec* krp = kraken_create(true);
     TaxIdData* txd = txd_create();
+
+    KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = non_conflicting ? kraken_adjust_taxonomy_nonconflicting : kraken_adjust_taxonomy;
     while(fgets(line, sizeof(line), fh)){
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
         if (krp->taxid > 0){
-            krp = kraken_adjust_taxonomy_nonconflicting(krp, tx);
+            krp = tax_adj_fp(krp, tx);
             float avg_kmer_frac = -1.0f;
             float kmer_frac1 = -1.0f;
             float kmer_frac2 = -1.0f;
