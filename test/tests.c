@@ -262,6 +262,78 @@ void test_avg_kmer_fraction_r2_missing_no_space()
     kraken_destroy(krp);
 }
 
+void test_quartiles_1_value()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.1f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 100);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 100);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 100);
+    txd_destroy(txd);
+}
+
+void test_quartiles_1_value_0()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.0f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 0);
+    txd_destroy(txd);
+}
+
+void test_quartiles_2_values()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.1f);
+    txd_add_data(txd, 1, 0.75f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 100);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 100);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 750);
+    txd_destroy(txd);
+}
+
+void test_quartiles_2_values_with_0()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.0f);
+    txd_add_data(txd, 1, 0.75f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 750);
+    txd_destroy(txd);
+}
+
+void test_quartiles_3_values()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.1f);
+    txd_add_data(txd, 1, 0.2f);
+    txd_add_data(txd, 1, 0.3f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 100);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 200);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 300);
+    txd_destroy(txd);
+}
+
+void test_quartiles_3_values_all_0()
+{
+    TaxIdData* txd = txd_create();
+    txd_add_data(txd, 1, 0.0f);
+    txd_add_data(txd, 1, 0.0f);
+    txd_add_data(txd, 1, 0.0f);
+    Quartiles qs = get_quartiles(txd->data[0]);
+    TEST_ASSERT_EQUAL(qs.q1, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q2, 0);
+    TEST_ASSERT_EQUAL_FLOAT(qs.q3, 0);
+    txd_destroy(txd);
+}
+
 void test_quartiles_1()
 {
     TaxIdData* txd = txd_create();
@@ -308,8 +380,7 @@ void test_quartiles_3()
     TEST_ASSERT_EQUAL_FLOAT(qs.q3, 342);
     txd_destroy(txd);
 }
-//C       GSGHC:00883:04911       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
-//C       GSGHC:09741:12490       1302620 75      85006:1 1302620:7 85006:5 0:1 1302620:5 0:1 1302620:2 0:12 1760:7       0.3415
+
 
 void test_quartiles_4()
 {
@@ -419,6 +490,12 @@ int main()
     RUN_TEST(test_avg_kmer_fraction_r1_missing_no_space);
     RUN_TEST(test_avg_kmer_fraction_r2_missing_space);
     RUN_TEST(test_avg_kmer_fraction_r2_missing_no_space);
+    RUN_TEST(test_quartiles_1_value);
+    RUN_TEST(test_quartiles_1_value_0);
+    RUN_TEST(test_quartiles_2_values);
+    RUN_TEST(test_quartiles_2_values_with_0);
+    RUN_TEST(test_quartiles_3_values);
+    RUN_TEST(test_quartiles_3_values_all_0);
     RUN_TEST(test_quartiles_1);
     RUN_TEST(test_quartiles_2);
     RUN_TEST(test_quartiles_3);
