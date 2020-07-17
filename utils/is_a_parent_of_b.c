@@ -60,19 +60,17 @@ int main(int argc, char* argv[argc])
         , {"names", no_argument, 0, 'n'}
     };
     int opt;
-    if (argc < 4){
-        print_usage();
-        return EXIT_FAILURE;
-    }
     char* db_name = 0;
     char* file_name = 0;
+    char* taxid1_str = 0;
+    char* taxid2_str = 0;
     uint64_t taxid1 = 0;
     uint64_t taxid2 = 0;
     int l_idx = 0;
     bool is_related_flag = false;
     bool labels_flag = false;
     bool names_flag = false;
-    while ((opt = getopt_long(argc, argv, "d:l:1:2rbn", long_opts, &l_idx)) != -1){
+    while ((opt = getopt_long(argc, argv, "d:l:1:2:rbn", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'l':
                 file_name = strndup(optarg, 1024);
@@ -81,10 +79,10 @@ int main(int argc, char* argv[argc])
                 db_name = strndup(optarg, 1024);
                 break;
             case '1':
-                taxid1 = strtoul(optarg, (void*)0, 10);
+                taxid1_str = strndup(optarg, 1024);
                 break;
             case '2':
-                taxid2 = strtoul(optarg, (void*)0, 10);
+                taxid2_str = strndup(optarg, 1024);
                 break;
             case 'a':
                 is_related_flag = true;
@@ -97,9 +95,18 @@ int main(int argc, char* argv[argc])
                 break;
         }
     }
+    if (argc < 4 || !db_name){
+        print_usage();
+        return EXIT_FAILURE;
+    }
     Taxonomy* tx = tx_create(db_name);
     if (!file_name){
+        /*printf("%s\t%s\n", taxid1_str, taxid2_str);*/
+        taxid1 = strtoul(taxid1_str, (void*)0, 10);
+        taxid2 = strtoul(taxid2_str, (void*)0, 10);
         print_result(taxid1, taxid2, is_related_flag, labels_flag, names_flag, tx);
+        free(taxid1_str);
+        free(taxid2_str);
     } else {
         char line[LINE_SIZE];
         FILE* fh = fopen(file_name, "r");
