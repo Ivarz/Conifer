@@ -22,10 +22,13 @@ bool is_related(uint64_t t1, uint64_t t2, Taxonomy const* tx)
     return t1_parent_t2 || t2_parent_t1;
 }
 
-void print_result(uint64_t t1, uint64_t t2, bool is_related_flag, bool labels_flag, Taxonomy const* tx)
+void print_result(uint64_t t1, uint64_t t2, bool is_related_flag, bool labels_flag, bool names_flag, Taxonomy const* tx)
 {
     if (labels_flag){
         printf("%lu\t%lu\t", t1, t2);
+    }
+    if (names_flag){
+        printf("%s\t%s\t", tx_taxid_name(t1, tx), tx_taxid_name(t2, tx));
     }
     if (is_related_flag){
         if (is_related(t1, t2, tx)){
@@ -54,6 +57,7 @@ int main(int argc, char* argv[argc])
         , {"taxid2", required_argument, 0, '2'}
         , {"any", no_argument, 0, 'a'}
         , {"labels", no_argument, 0, 'b'}
+        , {"names", no_argument, 0, 'n'}
     };
     int opt;
     if (argc < 4){
@@ -67,7 +71,8 @@ int main(int argc, char* argv[argc])
     int l_idx = 0;
     bool is_related_flag = false;
     bool labels_flag = false;
-    while ((opt = getopt_long(argc, argv, "d:l:1:2rb", long_opts, &l_idx)) != -1){
+    bool names_flag = false;
+    while ((opt = getopt_long(argc, argv, "d:l:1:2rbn", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'l':
                 file_name = strndup(optarg, 1024);
@@ -87,18 +92,21 @@ int main(int argc, char* argv[argc])
             case 'b':
                 labels_flag = true;
                 break;
+            case 'n':
+                names_flag = true;
+                break;
         }
     }
     Taxonomy* tx = tx_create(db_name);
     if (!file_name){
-        print_result(taxid1, taxid2, is_related_flag, labels_flag, tx);
+        print_result(taxid1, taxid2, is_related_flag, labels_flag, names_flag, tx);
     } else {
         char line[LINE_SIZE];
         FILE* fh = fopen(file_name, "r");
         while(fgets(line, sizeof(line), fh)){
             uint64_t taxid1 = strtoul(strtok(line,"\t"), (void*)0, 10);
             uint64_t taxid2 = strtoul(strtok(0,"\n"), (void*)0, 10);
-            print_result(taxid1, taxid2, is_related_flag, labels_flag, tx);
+            print_result(taxid1, taxid2, is_related_flag, labels_flag, names_flag, tx);
         }
         fclose(fh);
         free(file_name);
