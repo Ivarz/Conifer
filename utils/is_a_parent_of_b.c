@@ -132,6 +132,9 @@ int main(int argc, char* argv[argc])
 				taxid2_str = strtok(0,",\n");
 			}
 			line_cpy[strnlen(line_cpy, LINE_SIZE) -1] = '\0';
+			if (names_flag){
+				printf("%s\t", tx_taxid_name(taxid1, tx));
+			}
 			printf("%s\t%d\n", line_cpy, (int) is_hit);
 			free(line_cpy);
         }
