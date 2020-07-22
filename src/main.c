@@ -9,6 +9,7 @@ void print_usage(void)
     fprintf(stderr, "\t-d,--db\t\tkraken2 taxo.k2d file\n");
     fprintf(stderr, "\t-a,--all\t\toutput all reads (including unclassified)\n");
     fprintf(stderr, "\t-s,--summary\t\toutput summary statistics for each taxonomy\n");
+    fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
     fprintf(stderr, "\n");
 
     return;
@@ -23,7 +24,7 @@ int main(int argc, char* argv[argc])
         , {"all", no_argument, 0, 'a'}
         , {"summary", no_argument, 0, 's'}
         , {"non_conflicting", no_argument, 0, 'n'}
-
+		, {"filter", required_argument, 0, 'f'}
     };
     if (argc < 3){
         print_usage();
@@ -34,8 +35,11 @@ int main(int argc, char* argv[argc])
     char* db_name = 0;
     bool summary = false;
     bool all_reads = false;
+    bool filter_reads = false;
     bool non_conflicting = false;
     int l_idx = 0;
+	float filter_threshold = -1.0f;
+	char* filter_threshold_str = 0;
     while ((opt = getopt_long(argc, argv, "i:d:nbasp", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'i':
@@ -53,6 +57,10 @@ int main(int argc, char* argv[argc])
             case 'n':
                 non_conflicting = true;
                 break;
+            case 'f':
+				filter_reads = true;
+                filter_threshold_str = strndup(optarg, 1024);
+                break;
         }
     }
     if (all_reads && summary){
@@ -67,6 +75,11 @@ int main(int argc, char* argv[argc])
         fprintf(stderr, "Provide kraken2 taxo.k2d filename\n");
         return EXIT_FAILURE;
     }
+	if (filter_reads){
+		filter_threshold = strtod(filter_threshold_str, 0);
+        fprintf(stderr, "using filter threshold %f\n", filter_threshold);
+		free(filter_threshold_str);
+	}
 
     FILE* fh = fopen(file_name, "r");
 
@@ -110,11 +123,22 @@ int main(int argc, char* argv[argc])
                 txd_add_data(txd, krp->taxid, avg_kmer_frac);
             } else {
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
-                if (krp->paired){
-                    printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
-                } else {
-                    printf("%s\t%.4f\n", line, avg_kmer_frac);
-                }
+				//TODO factorize
+				if (filter_reads){
+					if (avg_kmer_frac >= filter_threshold){
+						if (krp->paired){
+							printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
+						} else {
+							printf("%s\t%.4f\n", line, avg_kmer_frac);
+						}
+					}
+				} else {
+					if (krp->paired){
+						printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
+					} else {
+						printf("%s\t%.4f\n", line, avg_kmer_frac);
+					}
+				}
             }
         } else {
             if(all_reads){
