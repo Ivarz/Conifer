@@ -10,6 +10,7 @@ void print_usage(void)
     fprintf(stderr, "\t-a,--all\t\toutput all reads (including unclassified)\n");
     fprintf(stderr, "\t-s,--summary\t\toutput summary statistics for each taxonomy\n");
     fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
+    fprintf(stderr, "\t-r,--rtl\t\treport root-to-leaf score instead of confidence score\n");
     fprintf(stderr, "\n");
 
     return;
@@ -23,7 +24,7 @@ int main(int argc, char* argv[argc])
         , {"db", required_argument, 0, 'd'}
         , {"all", no_argument, 0, 'a'}
         , {"summary", no_argument, 0, 's'}
-        , {"non_conflicting", no_argument, 0, 'n'}
+        , {"rtl", no_argument, 0, 'r'}
 		, {"filter", required_argument, 0, 'f'}
     };
     if (argc < 3){
@@ -36,11 +37,11 @@ int main(int argc, char* argv[argc])
     bool summary = false;
     bool all_reads = false;
     bool filter_reads = false;
-    bool non_conflicting = false;
+    bool rtl = false;
     int l_idx = 0;
 	float filter_threshold = -1.0f;
 	char* filter_threshold_str = 0;
-    while ((opt = getopt_long(argc, argv, "i:d:nbasp", long_opts, &l_idx)) != -1){
+    while ((opt = getopt_long(argc, argv, "i:d:rbasp", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'i':
                 file_name = strndup(optarg, 1024);
@@ -54,8 +55,8 @@ int main(int argc, char* argv[argc])
             case 's':
                 summary = true;
                 break;
-            case 'n':
-                non_conflicting = true;
+            case 'r':
+                rtl = true;
                 break;
             case 'f':
 				filter_reads = true;
@@ -77,7 +78,7 @@ int main(int argc, char* argv[argc])
     }
 	if (filter_reads){
 		filter_threshold = strtod(filter_threshold_str, 0);
-        fprintf(stderr, "using filter threshold %f\n", filter_threshold);
+        /*fprintf(stderr, "using filter threshold %f\n", filter_threshold);*/
 		free(filter_threshold_str);
 	}
 
@@ -99,7 +100,7 @@ int main(int argc, char* argv[argc])
     KrakenRec* krp = kraken_create(true);
     TaxIdData* txd = txd_create();
 
-    KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = non_conflicting ? kraken_adjust_taxonomy_nonconflicting : kraken_adjust_taxonomy;
+    KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = rtl ? kraken_adjust_taxonomy_nonconflicting : kraken_adjust_taxonomy;
     while(fgets(line, sizeof(line), fh)){
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
