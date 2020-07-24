@@ -6,7 +6,7 @@ void print_usage(void)
 {
     fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n");
     fprintf(stderr, "\t-i,--input\t\tinput file\n");
-    fprintf(stderr, "\t-d,--db\t\tkraken2 taxo.k2d file\n");
+    fprintf(stderr, "\t\t-d,--db\t\tkraken2 taxo.k2d file\n");
     fprintf(stderr, "\t-a,--all\t\toutput all reads (including unclassified)\n");
     fprintf(stderr, "\t-s,--summary\t\toutput summary statistics for each taxonomy\n");
     fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
