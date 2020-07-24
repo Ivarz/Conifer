@@ -46,6 +46,5 @@ void tx_destroy(Taxonomy* tx);
 void tn_print(TaxonomyNode const* const tn);
 uint64_t get_internal_id(uint64_t external_id, Taxonomy const* const tx);
 bool is_a_parent_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx);
-bool is_a_child_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx);
-char const* const tx_taxid_name(uint64_t taxid, Taxonomy const* const tx);
+char* tx_taxid_name(uint64_t taxid, Taxonomy const* const tx);
 #endif

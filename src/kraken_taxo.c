@@ -16,7 +16,7 @@ void tn_print(TaxonomyNode const* const tn)
     return;
 }
 
-uint64_t get_internal_id_binsearch(uint64_t external_id, Taxonomy const* const tx, int begin, int end)
+uint64_t get_internal_id_binsearch(uint64_t external_id, Taxonomy const* const tx, uint64_t begin, uint64_t end)
 {
     if (begin - end < 1024){
         for (uint64_t i=begin; i < end; i++){
@@ -57,10 +57,6 @@ bool is_a_parent_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx)
     return false;
 }
 
-bool is_a_child_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx)
-{
-    return false;
-}
 Taxonomy* tx_create(char const* fname)
 {
     Taxonomy* tx = malloc(sizeof(*tx));
@@ -133,7 +129,7 @@ void tx_destroy(Taxonomy* tx)
 }
 
 
-char const* const tx_taxid_name(uint64_t taxid, Taxonomy const* const tx)
+char* tx_taxid_name(uint64_t taxid, Taxonomy const* const tx)
 {
     uint64_t int_id = get_internal_id(taxid, tx);
     uint64_t name_offset = tx->nodes[int_id].name_offset;

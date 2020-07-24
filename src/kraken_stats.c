@@ -51,7 +51,7 @@ KmerCounts* kmc_fill(KmerCounts* kc, char* str)
     }
     char* taxid_str = strtok(str,":");
     char* count_str = strtok(0," ");
-    int i=0;
+    size_t i = 0;
     kc->size = 0;
 
     while(taxid_str != 0 && count_str != 0){
@@ -113,7 +113,7 @@ KrakenRec* kraken_reset(KrakenRec* krp)
 bool paired_end_data(char* kraken_line)
 {
     bool paired = false;
-    for (int i = 0; i < strnlen(kraken_line, 1024); i++){
+    for (size_t i = 0; i < strnlen(kraken_line, 1024); i++){
         if (kraken_line[i] == '|'){
             paired = true;
             return paired;
@@ -194,14 +194,14 @@ void kraken_print(KrakenRec* krp)
     printf("read_len2: %lu\n", krp->read2_len);
     printf("read1_kmers size: %zu\n", krp->read1_kmers->size);
     printf("read2_kmers size: %zu\n", krp->read2_kmers->size);
-    for (int i=0; i < krp->read1_kmers->size; i++){
+    for (size_t i=0; i < krp->read1_kmers->size; i++){
         printf("%lu:%lu "
                 , krp->read1_kmers->taxids[i]
                 , krp->read1_kmers->counts[i]
                 );
     }
     printf("\n");
-    for (int i=0; i < krp->read2_kmers->size; i++){
+    for (size_t i=0; i < krp->read2_kmers->size; i++){
         printf("%lu:%lu "
                 , krp->read2_kmers->taxids[i]
                 , krp->read2_kmers->counts[i]
@@ -251,7 +251,7 @@ void fh_print(FloatHist* fh)
     printf("size: %zu capacity: %zu\n", fh->size, fh->capacity);
     int line = 0;
     printf("%d ", line++);
-    for (int i=0; i < fh->size; i++){
+    for (size_t i=0; i < fh->size; i++){
         printf("%d ", fh->fraction_counts[i]);
         if (!((i+1) % 10)){
             printf("\n%d ",line++);
@@ -368,7 +368,7 @@ void txd_print(TaxIdData* txd)
 int64_t fh_sum(FloatHist* fh)
 {
     int64_t total_kmers = 0;
-    for (int i = 0; i < fh->size; i++){
+    for (size_t i = 0; i < fh->size; i++){
         if (total_kmers > INT32_MAX - fh->fraction_counts[i]){
             fprintf(stderr, "Integer overflow at %d\n", __LINE__);
         }
@@ -387,7 +387,7 @@ Quartiles get_quartiles_from_odd(FloatHist* fh, int64_t total_kmers)
     q1_thresh = ceil(q1_thresh);
     q3_thresh = floor(q3_thresh);
     int64_t cumsum = 0;
-    for ( int i = 0; i < fh->size; i++){
+    for ( size_t i = 0; i < fh->size; i++){
         cumsum += fh->fraction_counts[i];
         if (cumsum >= q1_thresh && result.q1 == -1.0f) {
             result.q1 = i;
@@ -438,19 +438,19 @@ Quartiles get_quartiles_from_even(FloatHist* fh, int64_t total_kmers)
         , q3_thresh1
         , q3_thresh2
         );
-    for ( int i = 0; i < fh->size; i++){
+    for ( size_t i = 0; i < fh->size; i++){
         cumsum += fh->fraction_counts[i];
-        for (int j = 0; j < 6; j++){
+        for (size_t j = 0; j < 6; j++){
             if (cumsum >= q_threshes[j] && q_vals[j] == -1.0f) {
                 q_vals[j] = i;
-                printf("q_vals[%d] = %d\n", j, i);
+                printf("q_vals[%ld] = %ld\n", j, i);
             }
         }
     }
-    for (int j = 1; j < 6; j++){
+    for (size_t j = 1; j < 6; j++){
         if (q_vals[j] == -1.0f) {
             q_vals[j] = q_vals[j-1];
-            printf("q_vals[%d] = %f\n", j, q_vals[j-1]);
+            printf("q_vals[%ld] = %f\n", j, q_vals[j-1]);
         }
 
     }
@@ -472,7 +472,7 @@ Quartiles get_nearest_rank_quartiles(FloatHist* fh)
     int64_t q3_thresh = ceil(75*( (float) total_kmers)/100.0f);
 
     int64_t cumsum = 0;
-    for ( int i = 0; i < fh->size; i++){
+    for ( size_t i = 0; i < fh->size; i++){
         cumsum += fh->fraction_counts[i];
         if (cumsum >= q1_thresh && result.q1 == -1.0f) {
             result.q1 = i;
@@ -500,12 +500,12 @@ float kmer_fraction(KmerCounts const* const kmcs, uint64_t const taxid)
 {
     int32_t total_kmers = 0;
 
-    for (int i=0; i < kmcs->size; i++){
+    for (size_t i=0; i < kmcs->size; i++){
         total_kmers += kmcs->counts[i];
     }
 
     float taxid_kmer_fraction = 0.0f;
-    for (int i=0; i < kmcs->size; i++){
+    for (size_t i=0; i < kmcs->size; i++){
         if (kmcs->taxids[i] == taxid){
             taxid_kmer_fraction += kmcs->counts[i] / (float) total_kmers;
         }
@@ -528,18 +528,18 @@ float get_avg_kmer_fraction(KrakenRec* krp)
 KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx)
 {
     if (krp->paired){
-        for (int i=0; i < krp->read1_kmers->size; i++){
+        for (size_t i=0; i < krp->read1_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx)){
                 krp->read1_kmers->taxids[i] = krp->taxid;
             }
         }
-        for (int i=0; i < krp->read2_kmers->size; i++){
+        for (size_t i=0; i < krp->read2_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read2_kmers->taxids[i], tx)){
                 krp->read2_kmers->taxids[i] = krp->taxid;
             }
         }
     } else {
-        for (int i=0; i < krp->read1_kmers->size; i++){
+        for (size_t i=0; i < krp->read1_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx)){
                 krp->read1_kmers->taxids[i] = krp->taxid;
             }
@@ -550,18 +550,18 @@ KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx)
 KrakenRec* kraken_adjust_taxonomy_rtl(KrakenRec* krp, Taxonomy const* const tx)
 {
     if (krp->paired){
-        for (int i=0; i < krp->read1_kmers->size; i++){
+        for (size_t i=0; i < krp->read1_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read1_kmers->taxids[i], krp->taxid, tx)){
                 krp->read1_kmers->taxids[i] = krp->taxid;
             }
         }
-        for (int i=0; i < krp->read2_kmers->size; i++){
+        for (size_t i=0; i < krp->read2_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read2_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read2_kmers->taxids[i], krp->taxid, tx)){
                 krp->read2_kmers->taxids[i] = krp->taxid;
             }
         }
     } else {
-        for (int i=0; i < krp->read1_kmers->size; i++){
+        for (size_t i=0; i < krp->read1_kmers->size; i++){
             if (is_a_parent_of_b(krp->taxid, krp->read1_kmers->taxids[i], tx) || is_a_parent_of_b(krp->read1_kmers->taxids[i], krp->taxid, tx)){
                 krp->read1_kmers->taxids[i] = krp->taxid;
             }
