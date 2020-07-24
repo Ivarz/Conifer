@@ -454,7 +454,7 @@ Quartiles get_quartiles_from_even(FloatHist* fh, int64_t total_kmers)
         }
 
     }
-        
+
 
     result.q1 = (q_vals[0] + q_vals[1]) / 2.0f;
     result.q2 = (q_vals[2] + q_vals[3]) / 2.0f;
@@ -547,7 +547,7 @@ KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx)
     }
     return krp;
 }
-KrakenRec* kraken_adjust_taxonomy_nonconflicting(KrakenRec* krp, Taxonomy const* const tx)
+KrakenRec* kraken_adjust_taxonomy_rtl(KrakenRec* krp, Taxonomy const* const tx)
 {
     if (krp->paired){
         for (int i=0; i < krp->read1_kmers->size; i++){
@@ -568,4 +568,23 @@ KrakenRec* kraken_adjust_taxonomy_nonconflicting(KrakenRec* krp, Taxonomy const*
         }
     }
     return krp;
+}
+KmerFractions kmf_calculate(KrakenRec const* const krp)
+{
+    float kmer_frac1 = -1.0f;
+    float kmer_frac2 = -1.0f;
+    float avg_kmer_frac = -1.0f;
+    if (krp->paired){
+        kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
+        kmer_frac2 = krp->read2_kmers->size ? kmer_fraction(krp->read2_kmers, krp->taxid) : -1.0f;
+        avg_kmer_frac = kmer_frac1 == -1.0f && kmer_frac2 == -1.0f ? 0.0f :
+            (kmer_frac1 >= 0.0f && kmer_frac2 < 0.0f) ? kmer_frac1 :
+            (kmer_frac1 < 0.0f && kmer_frac2 >= 0.0f) ? kmer_frac2 :
+            ((kmer_frac1 + kmer_frac2) / 2.0f);
+    } else {
+        kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
+        avg_kmer_frac = kmer_frac1 == -1.0f ? 0.0f : kmer_frac1;
+    }
+	KmerFractions result = {krp->paired, kmer_frac1, kmer_frac2, avg_kmer_frac};
+    return result;
 }

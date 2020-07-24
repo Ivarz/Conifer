@@ -88,6 +88,15 @@ int32_t txd_add_new_taxa(TaxIdData* txd, uint64_t const taxid);
 void txd_add_data(TaxIdData* txd, uint64_t taxid, float frac);
 void txd_print(TaxIdData* txd);
 
+typedef struct KmerFractions KmerFractions;
+struct KmerFractions
+{
+	bool paired;
+	float read1_kmer_frac;
+	float read2_kmer_frac;
+	float avg_kmer_frac;
+};
+
 typedef struct Quartiles Quartiles;
 struct Quartiles
 {
@@ -102,6 +111,8 @@ float kmer_fraction(KmerCounts const* const kmcs, uint64_t const taxid);
 
 float get_avg_kmer_fraction(KrakenRec* krp);
 KrakenRec* kraken_adjust_taxonomy(KrakenRec* krp, Taxonomy const* const tx);
-KrakenRec* kraken_adjust_taxonomy_nonconflicting(KrakenRec* krp, Taxonomy const* const tx);
+KrakenRec* kraken_adjust_taxonomy_rtl(KrakenRec* krp, Taxonomy const* const tx);
+
+KmerFractions kmf_calculate(KrakenRec const* const krp);
 
 #endif

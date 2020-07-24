@@ -16,16 +16,38 @@ void print_usage(void)
     return;
 }
 
+/*void print_output(KrakenRec const* const krp, char const* const line, float const kmer_frac1, float const kmer_frac2, float const avg_kmer_frac)*/
+/*{*/
+	/*if (krp->paired){*/
+		/*printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);*/
+	/*} else {*/
+		/*printf("%s\t%.4f\n", line, avg_kmer_frac);*/
+	/*}*/
+	/*return;*/
+/*}*/
+
+void print_output(char const* const line, KmerFractions kmf)
+{
+	if (kmf.paired){
+		printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmf.read1_kmer_frac, kmf.read2_kmer_frac, kmf.avg_kmer_frac);
+	} else {
+		printf("%s\t%.4f\n", line, kmf.avg_kmer_frac);
+	}
+	return;
+}
+
 int main(int argc, char* argv[argc])
 {
     static struct option long_opts[] =
     {
         {"input", required_argument, 0, 'i'}
         , {"db", required_argument, 0, 'd'}
-        , {"all", no_argument, 0, 'a'}
+        , {"all_reads", no_argument, 0, 'a'}
         , {"summary", no_argument, 0, 's'}
         , {"rtl", no_argument, 0, 'r'}
 		, {"filter", required_argument, 0, 'f'}
+		, {"both_scores", no_argument, 0, 'b'}
+
     };
     if (argc < 3){
         print_usage();
@@ -37,6 +59,7 @@ int main(int argc, char* argv[argc])
     bool summary = false;
     bool all_reads = false;
     bool filter_reads = false;
+    bool both_scores = false;
     bool rtl = false;
     int l_idx = 0;
 	float filter_threshold = -1.0f;
@@ -58,6 +81,9 @@ int main(int argc, char* argv[argc])
             case 'r':
                 rtl = true;
                 break;
+            case 'b':
+                both_scores = true;
+                break;
             case 'f':
 				filter_reads = true;
                 filter_threshold_str = strndup(optarg, 1024);
@@ -78,7 +104,6 @@ int main(int argc, char* argv[argc])
     }
 	if (filter_reads){
 		filter_threshold = strtod(filter_threshold_str, 0);
-        /*fprintf(stderr, "using filter threshold %f\n", filter_threshold);*/
 		free(filter_threshold_str);
 	}
 
@@ -100,56 +125,30 @@ int main(int argc, char* argv[argc])
     KrakenRec* krp = kraken_create(true);
     TaxIdData* txd = txd_create();
 
-    KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = rtl ? kraken_adjust_taxonomy_nonconflicting : kraken_adjust_taxonomy;
+    KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = rtl ? kraken_adjust_taxonomy_rtl : kraken_adjust_taxonomy;
     while(fgets(line, sizeof(line), fh)){
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
         if (krp->taxid > 0){
             krp = tax_adj_fp(krp, tx);
-            float avg_kmer_frac = -1.0f;
-            float kmer_frac1 = -1.0f;
-            float kmer_frac2 = -1.0f;
-            if (krp->paired){
-                kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
-                kmer_frac2 = krp->read2_kmers->size ? kmer_fraction(krp->read2_kmers, krp->taxid) : -1.0f;
-                avg_kmer_frac = kmer_frac1 == -1.0f && kmer_frac2 == -1.0f ? 0.0f :
-                    (kmer_frac1 >= 0.0f && kmer_frac2 < 0.0f) ? kmer_frac1 :
-                    (kmer_frac1 < 0.0f && kmer_frac2 >= 0.0f) ? kmer_frac2 :
-                    ((kmer_frac1 + kmer_frac2) / 2.0f);
-            } else {
-                kmer_frac1 = krp->read1_kmers->size ? kmer_fraction(krp->read1_kmers, krp->taxid) : -1.0f;
-                avg_kmer_frac = kmer_frac1 == -1.0f ? 0.0f : kmer_frac1;
-            }
+			KmerFractions kmf = kmf_calculate(krp);
             if (summary){
-                txd_add_data(txd, krp->taxid, avg_kmer_frac);
+                txd_add_data(txd, krp->taxid, kmf.avg_kmer_frac);
             } else {
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
-				//TODO factorize
 				if (filter_reads){
-					if (avg_kmer_frac >= filter_threshold){
-						if (krp->paired){
-							printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
-						} else {
-							printf("%s\t%.4f\n", line, avg_kmer_frac);
-						}
+					if (kmf.avg_kmer_frac >= filter_threshold){
+						print_output(line, kmf);
 					}
 				} else {
-					if (krp->paired){
-						printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmer_frac1, kmer_frac2, avg_kmer_frac);
-					} else {
-						printf("%s\t%.4f\n", line, avg_kmer_frac);
-					}
+					print_output(line, kmf);
 				}
             }
         } else {
             if(all_reads){
                 line[strnlen(line, LINE_SIZE) -1] = '\0';
-                if (krp->paired){
-                    printf("%s\t%.4f\t%.4f\t%.4f\n", line, 0.0f, 0.0f, 0.0f);
-                } else {
-                    printf("%s\t%.4f\n", line, 0.0f);
-                }
-
+				KmerFractions kmf_zero = {krp->paired, 0.0f, 0.0f, 0.0f};
+				print_output(line, kmf_zero);
             }
         }
         krp = kraken_reset(krp);
