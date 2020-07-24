@@ -126,6 +126,9 @@ int main(int argc, char* argv[argc])
     TaxIdData* txd = txd_create();
 
     KrakenRec* (*tax_adj_fp)(KrakenRec*, Taxonomy const* const) = rtl ? kraken_adjust_taxonomy_rtl : kraken_adjust_taxonomy;
+	if (both_scores){
+		fprintf(stderr, "both scores option not yet implemented\n");
+	}
     while(fgets(line, sizeof(line), fh)){
         memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
         krp = kraken_fill(krp, line_to_parse);
