@@ -18,7 +18,7 @@ void print_usage(void)
     fprintf(stderr, "\t-s,--summary\t\toutput summary statistics for each taxonomy\n");
     fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
     fprintf(stderr, "\t-r,--rtl\t\treport root-to-leaf score instead of confidence score\n");
-    fprintf(stderr, "\t-b,--both_scores\t\treport confidence and root-to-leaf score\n");
+    fprintf(stderr, "\t-b,--both_scores\treport confidence and root-to-leaf score\n");
     fprintf(stderr, "\n");
 
     return;
