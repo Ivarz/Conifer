@@ -76,6 +76,10 @@ KmerCounts* kmc_fill(KmerCounts* kc, char* str)
     return kc;
 }
 
+/*void kmc_copy(KmerCounts const* const src, KmerCounts* const dst)*/
+/*{*/
+    /*return;*/
+/*}*/
 void kmc_destroy(KmerCounts* kc)
 {
     free(kc->counts);
