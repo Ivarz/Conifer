@@ -158,7 +158,7 @@ void print_scores_by_record(FILE* fh, Taxonomy const* const tx, int flags, float
             krp = kraken_fill(krp, line_to_parse);
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
-                kmfs[j] = kmf_calculate(krp);
+                kmfs[i] = kmf_calculate(krp);
                 // remove newline character
             }
         }
