@@ -45,6 +45,9 @@ uint64_t get_internal_id(uint64_t external_id, Taxonomy const* const tx)
 
 bool is_a_parent_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx)
 {
+	if (a_ext == 1 && a_ext <= b_ext){
+		return true;
+	}
     uint64_t b_internal_id = get_internal_id(b_ext, tx);
     TaxonomyNode const* b_node = tx->nodes+b_internal_id;
     while (b_node->parent_id){
