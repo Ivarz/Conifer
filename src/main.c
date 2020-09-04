@@ -47,14 +47,6 @@ void print_output_general(char const* const line, size_t const kmfn, KmerFractio
         }
         printf("\n");
     } else {
-        /*for (size_t i = 0; i < kmfn; i++){*/
-            /*printf("\t%.4f\t%.4f\t%.4f"*/
-                    /*, kmfs[i].read1_kmer_frac*/
-                    /*, kmfs[i].read2_kmer_frac*/
-                    /*, kmfs[i].avg_kmer_frac*/
-                    /*);*/
-        /*}*/
-        /*printf("\n");*/
         for (size_t i = 0; i < kmfn; i++){
             printf("\t%.4f"
                     , kmfs[i].avg_kmer_frac
