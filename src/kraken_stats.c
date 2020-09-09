@@ -126,6 +126,34 @@ bool paired_end_data(char* kraken_line)
     return paired;
 }
 
+uint64_t extract_taxid(char const* const taxid_field)
+{
+	uint64_t taxid = 0;
+	int last_idx = strnlen(taxid_field, 4096) - 1;
+	/*if (strstr(taxid_field, "(taxid")){*/
+	if (taxid_field[last_idx] == ')'){
+		bool is_digit = true;
+		int last_digit_idx = last_idx - 1;
+		int first_digit_idx = 0;
+		while (is_digit){
+			if (taxid_field[last_digit_idx] - '0' > 9){
+				is_digit = false;
+				first_digit_idx = last_digit_idx + 1;
+			}
+			last_digit_idx--;
+		}
+		char taxid_string[128] = {0};
+		memcpy(taxid_string
+				, taxid_field + first_digit_idx
+				, sizeof(taxid_string[0]) * (last_idx - first_digit_idx)
+				);
+		taxid = strtoul(taxid_string, (void*)0, 10);
+	} else {
+		taxid = strtoul(taxid_field, (void*)0, 10);
+	}
+	return taxid;
+}
+
 KrakenRec* kraken_fill(KrakenRec* krp, char* kraken_line)
 {
     if (!strcmp(kraken_line,"")){
@@ -139,6 +167,9 @@ KrakenRec* kraken_fill(KrakenRec* krp, char* kraken_line)
         char* class_field = strtok(kraken_line, "\t");
         char* read_name = strtok(0, "\t");
         char* tax_field = strtok(0, "\t");
+		if (strstr(tax_field, "taxid")){
+			;
+		}
         char* read1_len = strtok(0, "|");
         char* read2_len = strtok(0, "\t");
         char* kmer_pairs_str = strtok(0, "\t");
@@ -158,7 +189,8 @@ KrakenRec* kraken_fill(KrakenRec* krp, char* kraken_line)
 
         krp->classified = class_field[0] == 'C' ? true : false;
         krp->read_name = read_name;
-        krp->taxid = strtoul(tax_field, (void*)0, 10);
+        /*krp->taxid = strtoul(tax_field, (void*)0, 10);*/
+        krp->taxid = extract_taxid(tax_field);
         check_ulong_overflow(krp->taxid);
 
         krp->read1_len = strtoul(read1_len, (void*)0, 10);
