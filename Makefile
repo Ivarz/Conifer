@@ -13,5 +13,5 @@ is_a_parent_of_b : utils/is_a_parent_of_b.c src/kraken_stats.c src/kraken_taxo.c
 taxid_name : utils/taxid_name.c src/kraken_stats.c src/kraken_taxo.c
 	gcc -std=c99 -Wall -O3 -D_POSIX_C_SOURCE=200809L -I third_party/uthash/src -I . src/kraken_stats.c src/kraken_taxo.c utils/taxid_name.c -o taxid_name -lm
 
-show_parents : utils/show_parents.c src/kraken_stats.c src/kraken_taxo.c
-	gcc -std=c99 -Wall -O3 -D_POSIX_C_SOURCE=200809L -I third_party/uthash/src -I . src/kraken_stats.c src/kraken_taxo.c utils/show_parents.c -o show_parents -lm
+show_ancestors : utils/show_ancestors.c src/kraken_stats.c src/kraken_taxo.c
+	gcc -std=c99 -Wall -O3 -D_POSIX_C_SOURCE=200809L -I third_party/uthash/src -I . src/kraken_stats.c src/kraken_taxo.c utils/show_ancestors.c -o show_ancestors -lm
