@@ -93,16 +93,13 @@ Taxonomy* tx_create(char const* fname)
     tx->name_data = malloc(tx->name_data_len*sizeof(*tx->name_data));
     fread(tx->name_data, sizeof(*tx->name_data), tx->name_data_len, taxo_fh);
 
-    char rank_data[tx->rank_data_len];
-    fread(rank_data, 1, sizeof(rank_data), taxo_fh);
-
     tx->rank_data = malloc(tx->rank_data_len*sizeof(*tx->rank_data));
     fread(tx->rank_data, sizeof(*tx->rank_data), tx->rank_data_len, taxo_fh);
 
     /*printf("%s\n", magic);*/
     /*printf("%ld\n", tx->node_count);*/
     /*printf("%ld\n", tx->name_data_len);*/
-    /*printf("%ld\n", tx->rank_data_len);*/
+	/*printf("%s rank_data_len %ld\n", __func__, tx->rank_data_len);*/
 
     tx->taxid_map = NULL;
     for (int i=0; i < tx->node_count; i++){
