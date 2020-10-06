@@ -480,7 +480,7 @@ int main()
     RUN_TEST(test_kraken_fill_read1_empty);
     RUN_TEST(test_kraken_fill_read2_empty);
     RUN_TEST(test_kraken_reset);
-    /*[>RUN_TEST(test_kraken_fill_taxid_overflow);<]*/
+	/*RUN_TEST(test_kraken_fill_taxid_overflow);*/
     RUN_TEST(test_fh_add_1);
     RUN_TEST(test_fh_add_2);
     RUN_TEST(txd_add_taxa_2);
