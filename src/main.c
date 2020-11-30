@@ -160,7 +160,6 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
                 kmfs[i] = kmf_calculate(krp);
-                // remove newline character
             }
         }
         if (krp->taxid > 0){
@@ -190,24 +189,6 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
     }
 
     kraken_destroy(krp);
-    return;
-}
-
-void test_f()
-{
-    int flags = 0;
-    flags |= SUMMARY;
-    flags |= RTL;
-    flags |= BOTH_SCORES;
-    printf("flags %d\t%d\t%d\t%d\t%d\t%d\t%d\n"
-            , flags
-            , SUMMARY
-            , RTL
-            , BOTH_SCORES
-            , ALL_RECORDS
-            , FILTER
-            , flags & ALL_RECORDS
-          );
     return;
 }
 

@@ -1,3 +1,8 @@
+# Dependencies
+[gcc](https://gcc.gnu.org/)
+[zlib](https://zlib.net/)
+[cmake](https://cmake.org/) if building tests
+
 # Building
 ```
 git clone https://github.com/Ivarz/Conifer && cd Conifer
