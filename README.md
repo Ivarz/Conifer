@@ -1,6 +1,8 @@
 # Dependencies
-[gcc](https://gcc.gnu.org/) <\br>
-[zlib](https://zlib.net/) <\br>
+[gcc](https://gcc.gnu.org/)
+
+[zlib](https://zlib.net/)
+
 [cmake](https://cmake.org/) if building tests
 
 # Building
