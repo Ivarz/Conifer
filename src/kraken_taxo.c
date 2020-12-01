@@ -74,7 +74,7 @@ Taxonomy* tx_create(char const* fname)
 
     fread(magic, 1, strnlen(FILE_MAGIC,16), taxo_fh);
     if (strcmp(magic, FILE_MAGIC) != 0){
-        printf("malformed taxonomy file:\n");
+        printf("malformed taxonomy file: %s\n", fname);
         printf("%s\n", magic);
         fclose(taxo_fh);
         return 0;
