@@ -2,11 +2,13 @@
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
+#include <zlib.h>
 
+#define LINE_SIZE 4096
 #define SUMMARY 1
 #define RTL (1 << 1)
-#define BOTH (1 << 2)
-#define ALL (1 << 3)
+#define BOTH_SCORES (1 << 2)
+#define ALL_RECORDS (1 << 3)
 #define FILTER (1 << 4)
 
 void print_usage(void)
@@ -24,17 +26,7 @@ void print_usage(void)
     return;
 }
 
-void print_output(char const* const line, KmerFractions kmf)
-{
-    if (kmf.paired){
-        printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmf.read1_kmer_frac, kmf.read2_kmer_frac, kmf.avg_kmer_frac);
-    } else {
-        printf("%s\t%.4f\n", line, kmf.avg_kmer_frac);
-    }
-    return;
-}
-
-void print_output_general(char const* const line, size_t const kmfn, KmerFractions kmfs[kmfn])
+void print_output(char const* const line, size_t const kmfn, KmerFractions kmfs[kmfn])
 {
     printf("%s", line);
     if (kmfs[0].paired){
@@ -57,16 +49,16 @@ void print_output_general(char const* const line, size_t const kmfn, KmerFractio
     return;
 }
 
-void gather_and_print_summary(FILE* fh, Taxonomy const* const tx, int flags)
+void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 {
     char line[LINE_SIZE] = {0};
     char line_to_parse[LINE_SIZE] = {0};
     int counter = 0;
-    int const kinds_of_calculations = (flags & BOTH) ? 2 : 1;
+    int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
 
     int indices[kinds_of_calculations];
 
-    if (flags & BOTH){
+    if (flags & BOTH_SCORES){
         indices[1] = 1;
     } else if (flags & RTL){
         indices[0] = 1;
@@ -78,7 +70,7 @@ void gather_and_print_summary(FILE* fh, Taxonomy const* const tx, int flags)
     TaxIdData* txds[2] = {txd_create(), txd_create()};
 
     KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while(fgets(line, sizeof(line), fh)){
+    while (gzgets(fh, line, sizeof(line))){
         for (int i = 0; i < kinds_of_calculations; i++){
             int j = indices[i];
             memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
@@ -89,13 +81,14 @@ void gather_and_print_summary(FILE* fh, Taxonomy const* const tx, int flags)
                 txd_add_data(txds[i], krp->taxid, kmf.avg_kmer_frac);
             }
             krp = kraken_reset(krp);
+			memset(line, 0, LINE_SIZE);
         }
         if (!(counter % 1000000) && counter){
             fprintf(stderr, "%d lines processed...\n", counter);
         }
         counter++;
     }
-    if (flags & BOTH){
+    if (flags & BOTH_SCORES){
         printf("taxon_name\ttaxid\treads\tP25_conf\tP50_conf\tP75_conf\tP25_rtl\tP50_rtl\tP75_rtl\n");
         for (int i=0; i < txds[0]->taxid_size; i++){
             Quartiles qs1 = get_quartiles(txds[0]->data[i]);
@@ -128,16 +121,16 @@ void gather_and_print_summary(FILE* fh, Taxonomy const* const tx, int flags)
     return;
 }
 
-void print_scores_by_record(FILE* fh, Taxonomy const* const tx, int flags, float filter_threshold)
+void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, float filter_threshold)
 {
     char line[LINE_SIZE] = {0};
     char line_to_parse[LINE_SIZE] = {0};
     int counter = 0;
 
-    int const kinds_of_calculations = (flags & BOTH) ? 2 : 1;
+    int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
     int indices[kinds_of_calculations];
 
-    if (flags & BOTH){
+    if (flags & BOTH_SCORES){
         indices[1] = 1;
     } else if (flags & RTL){
         indices[0] = 1;
@@ -149,7 +142,7 @@ void print_scores_by_record(FILE* fh, Taxonomy const* const tx, int flags, float
     KmerFractions kmfs[2];
 
     KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while(fgets(line, sizeof(line), fh)){
+    while (gzgets(fh, line, sizeof(line))){
         for (int i = 0; i < kinds_of_calculations; i++){
             int j = indices[i];
             memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
@@ -157,53 +150,35 @@ void print_scores_by_record(FILE* fh, Taxonomy const* const tx, int flags, float
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
                 kmfs[i] = kmf_calculate(krp);
-                // remove newline character
             }
         }
         if (krp->taxid > 0){
             line[strnlen(line, LINE_SIZE) -1] = '\0';
-            if ((flags & FILTER) && !(flags & BOTH)){
+            if ((flags & FILTER) && !(flags & BOTH_SCORES)){
                 if (kmfs[0].avg_kmer_frac >= filter_threshold){
-                    print_output_general(line, kinds_of_calculations, kmfs);
+                    print_output(line, kinds_of_calculations, kmfs);
                 }
             } else {
-                print_output_general(line, kinds_of_calculations, kmfs);
+                print_output(line, kinds_of_calculations, kmfs);
             }
-        } else if(flags & ALL){
+        } else if(flags & ALL_RECORDS){
             line[strnlen(line, LINE_SIZE) -1] = '\0';
             kmfs[0].paired = krp->paired;
             kmfs[0].read1_kmer_frac = 0.0f;
             kmfs[0].read2_kmer_frac = 0.0f;
             kmfs[0].avg_kmer_frac = 0.0f;
             kmfs[1] = kmfs[0];
-            print_output_general(line, kinds_of_calculations, kmfs);
+            print_output(line, kinds_of_calculations, kmfs);
         }
         if (!(counter % 1000000) && counter){
             fprintf(stderr, "%d lines processed...\n", counter);
         }
         counter++;
         krp = kraken_reset(krp);
+		memset(line, 0, LINE_SIZE);
     }
 
     kraken_destroy(krp);
-    return;
-}
-
-void test_f()
-{
-    int flags = 0;
-    flags |= SUMMARY;
-    flags |= RTL;
-    flags |= BOTH;
-    printf("flags %d\t%d\t%d\t%d\t%d\t%d\t%d\n"
-            , flags
-            , SUMMARY
-            , RTL
-            , BOTH
-            , ALL
-            , FILTER
-            , flags & ALL
-          );
     return;
 }
 
@@ -240,7 +215,7 @@ int main(int argc, char* argv[argc])
                 db_name = strndup(optarg, 1024);
                 break;
             case 'a':
-                flags |= ALL;
+                flags |= ALL_RECORDS;
                 break;
             case 's':
                 flags |= SUMMARY;
@@ -249,7 +224,7 @@ int main(int argc, char* argv[argc])
                 flags |= RTL;
                 break;
             case 'b':
-                flags |= BOTH;
+                flags |= BOTH_SCORES;
                 break;
             case 'f':
                 filter_threshold_str = strndup(optarg, 1024);
@@ -257,7 +232,7 @@ int main(int argc, char* argv[argc])
                 break;
         }
     }
-    if ((flags & ALL) && (flags & SUMMARY)){
+    if ((flags & ALL_RECORDS) && (flags & SUMMARY)){
         fprintf(stderr, "Options -a or -s are mutually exclusive\n");
         return EXIT_FAILURE;
     }
@@ -274,7 +249,7 @@ int main(int argc, char* argv[argc])
         free(filter_threshold_str);
     }
 
-    FILE* fh = fopen(file_name, "r");
+    gzFile fh = gzopen(file_name, "rb");
 
     if (fh == NULL){
         fprintf(stderr, "Can't open %s\n", file_name);
@@ -293,7 +268,7 @@ int main(int argc, char* argv[argc])
         print_scores_by_record(fh, tx, flags, filter_threshold);
     }
     tx_destroy(tx);
-    fclose(fh);
+    gzclose(fh);
     free(file_name);
     free(db_name);
     return EXIT_SUCCESS;

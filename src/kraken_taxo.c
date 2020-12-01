@@ -62,9 +62,6 @@ bool is_a_parent_of_b(uint64_t a_ext, uint64_t b_ext, Taxonomy const* const tx)
 
 Taxonomy* tx_create(char const* fname)
 {
-    Taxonomy* tx = malloc(sizeof(*tx));
-    tx->node_count = 0;
-
     FILE* taxo_fh = fopen(fname, "rb");
     if (taxo_fh == NULL){
         printf("Can't open %s\n", fname);
@@ -77,11 +74,14 @@ Taxonomy* tx_create(char const* fname)
 
     fread(magic, 1, strnlen(FILE_MAGIC,16), taxo_fh);
     if (strcmp(magic, FILE_MAGIC) != 0){
-        printf("malformed taxonomy file:\n");
+        printf("malformed taxonomy file: %s\n", fname);
         printf("%s\n", magic);
         fclose(taxo_fh);
         return 0;
     }
+
+    Taxonomy* tx = malloc(sizeof(*tx));
+    tx->node_count = 0;
 
     fread(&tx->node_count, 1, sizeof(tx->node_count), taxo_fh);
     fread(&tx->name_data_len, 1, sizeof(tx->name_data_len), taxo_fh);
