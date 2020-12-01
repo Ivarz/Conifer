@@ -26,17 +26,7 @@ void print_usage(void)
     return;
 }
 
-void print_output(char const* const line, KmerFractions kmf)
-{
-    if (kmf.paired){
-        printf("%s\t%.4f\t%.4f\t%.4f\n", line, kmf.read1_kmer_frac, kmf.read2_kmer_frac, kmf.avg_kmer_frac);
-    } else {
-        printf("%s\t%.4f\n", line, kmf.avg_kmer_frac);
-    }
-    return;
-}
-
-void print_output_general(char const* const line, size_t const kmfn, KmerFractions kmfs[kmfn])
+void print_output(char const* const line, size_t const kmfn, KmerFractions kmfs[kmfn])
 {
     printf("%s", line);
     if (kmfs[0].paired){
@@ -166,10 +156,10 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
             line[strnlen(line, LINE_SIZE) -1] = '\0';
             if ((flags & FILTER) && !(flags & BOTH_SCORES)){
                 if (kmfs[0].avg_kmer_frac >= filter_threshold){
-                    print_output_general(line, kinds_of_calculations, kmfs);
+                    print_output(line, kinds_of_calculations, kmfs);
                 }
             } else {
-                print_output_general(line, kinds_of_calculations, kmfs);
+                print_output(line, kinds_of_calculations, kmfs);
             }
         } else if(flags & ALL_RECORDS){
             line[strnlen(line, LINE_SIZE) -1] = '\0';
@@ -178,7 +168,7 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
             kmfs[0].read2_kmer_frac = 0.0f;
             kmfs[0].avg_kmer_frac = 0.0f;
             kmfs[1] = kmfs[0];
-            print_output_general(line, kinds_of_calculations, kmfs);
+            print_output(line, kinds_of_calculations, kmfs);
         }
         if (!(counter % 1000000) && counter){
             fprintf(stderr, "%d lines processed...\n", counter);
