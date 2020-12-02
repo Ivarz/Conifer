@@ -11,6 +11,8 @@ struct String
 };
 
 String* string_create(void);
+String* string_create_from(char* str);
+String* string_create_copy(String* str);
 
 void string_destroy(String* str);
 void string_reset(String* str);
