@@ -1,4 +1,5 @@
 #include "src/kraken_stats.h"
+#include "src/utils.h"
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
