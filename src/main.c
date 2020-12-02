@@ -4,15 +4,22 @@
 #include <assert.h>
 #include <zlib.h>
 
+#define MAJOR 1
+#define MINOR 0
+#define PATCH 1
+
 #define LINE_SIZE 4096
 #define SUMMARY 1
 #define RTL (1 << 1)
 #define BOTH_SCORES (1 << 2)
 #define ALL_RECORDS (1 << 3)
 #define FILTER (1 << 4)
+#define SHOW_VERSION (1 << 5)
 
 void print_usage(void)
 {
+    fprintf(stderr, "Conifer %d.%d.%d\n", MAJOR, MINOR, PATCH);
+    fprintf(stderr, "Usage:\n");
     fprintf(stderr, "conifer [OPTIONS] -i <KRAKEN_FILE> -d <TAXO_K2D>\n");
     fprintf(stderr, "\t-i,--input\t\tinput file\n");
     fprintf(stderr, "\t-d,--db\t\t\tkraken2 taxo.k2d file\n");
@@ -21,6 +28,7 @@ void print_usage(void)
     fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
     fprintf(stderr, "\t-r,--rtl\t\treport root-to-leaf score instead of confidence score\n");
     fprintf(stderr, "\t-b,--both_scores\treport confidence and root-to-leaf score\n");
+    fprintf(stderr, "\t-v,--version\t\tshow version\n");
     fprintf(stderr, "\n");
 
     return;
@@ -81,18 +89,19 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
                 txd_add_data(txds[i], krp->taxid, kmf.avg_kmer_frac);
             }
             krp = kraken_reset(krp);
-			memset(line, 0, LINE_SIZE);
         }
         if (!(counter % 1000000) && counter){
             fprintf(stderr, "%d lines processed...\n", counter);
         }
         counter++;
+		memset(line, 0, LINE_SIZE);
     }
     if (flags & BOTH_SCORES){
         printf("taxon_name\ttaxid\treads\tP25_conf\tP50_conf\tP75_conf\tP25_rtl\tP50_rtl\tP75_rtl\n");
         for (int i=0; i < txds[0]->taxid_size; i++){
             Quartiles qs1 = get_quartiles(txds[0]->data[i]);
             Quartiles qs2 = get_quartiles(txds[1]->data[i]);
+			/*printf("%lu %lu\n",txds[0]->taxids[i],  txds[1]->taxids[i]);*/
             assert(txds[0]->taxids[i] == txds[1]->taxids[i]);
             assert(fh_sum(txds[0]->data[i]) == fh_sum(txds[1]->data[i]));
             printf("%s\t%lu\t%ld\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n"
@@ -193,9 +202,10 @@ int main(int argc, char* argv[argc])
         , {"rtl", no_argument, 0, 'r'}
         , {"filter", required_argument, 0, 'f'}
         , {"both_scores", no_argument, 0, 'b'}
+        , {"version", no_argument, 0, 'v'}
 
     };
-    if (argc < 3){
+    if (argc < 2){
         print_usage();
         return EXIT_FAILURE;
     }
@@ -206,7 +216,7 @@ int main(int argc, char* argv[argc])
     int l_idx = 0;
     float filter_threshold = -1.0f;
     char* filter_threshold_str = 0;
-    while ((opt = getopt_long(argc, argv, "i:d:rbasp", long_opts, &l_idx)) != -1){
+    while ((opt = getopt_long(argc, argv, "i:d:rbaspv", long_opts, &l_idx)) != -1){
         switch (opt) {
             case 'i':
                 file_name = strndup(optarg, 1024);
@@ -226,12 +236,19 @@ int main(int argc, char* argv[argc])
             case 'b':
                 flags |= BOTH_SCORES;
                 break;
+            case 'v':
+                flags |= SHOW_VERSION;
+                break;
             case 'f':
                 filter_threshold_str = strndup(optarg, 1024);
                 flags |= FILTER;
                 break;
         }
     }
+	if (flags & SHOW_VERSION){
+		fprintf(stderr, "Conifer %d.%d.%d\n", MAJOR, MINOR, PATCH);
+        return EXIT_SUCCESS;
+	}
     if ((flags & ALL_RECORDS) && (flags & SUMMARY)){
         fprintf(stderr, "Options -a or -s are mutually exclusive\n");
         return EXIT_FAILURE;

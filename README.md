@@ -12,6 +12,10 @@ git submodule update --init --recursive
 make
 ```
 
+To build tests use
+```
+make tests
+```
 
 # Basic usage
 To use this tool you need standard output file from [kraken2](https://github.com/DerrickWood/kraken2) and taxonomy database file (`taxo.k2d`).
