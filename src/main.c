@@ -62,6 +62,7 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     /*char line[LINE_SIZE] = {0};*/
     /*char line_to_parse[LINE_SIZE] = {0};*/
 	String* line = string_create();
+	String* line_cpy = string_create();
 
     int counter = 0;
     int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
@@ -83,7 +84,7 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 	KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
     while (parse_line(fh, line)){
 		for (int i = 0; i < kinds_of_calculations; i++){
-			String* line_cpy = string_create_copy(line);
+			string_copy(line_cpy, line);
 			int j = indices[i];
 			krp = kraken_fill(krp, line_cpy);
 			if (krp->taxid > 0){
@@ -92,7 +93,6 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 				txd_add_data(txds[i], krp->taxid, kmf.avg_kmer_frac);
 			}
 			krp = kraken_reset(krp);
-			string_destroy(line_cpy);
 		}
 		if (!(counter % 1000000) && counter){
 			fprintf(stderr, "%d lines processed...\n", counter);
@@ -129,6 +129,7 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     txd_destroy(txds[0]);
     txd_destroy(txds[1]);
     kraken_destroy(krp);
+	string_destroy(line_cpy);
 	string_destroy(line);
 
     return;
@@ -139,6 +140,7 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
     /*char line[LINE_SIZE] = {0};*/
     /*char line_to_parse[LINE_SIZE] = {0};*/
 	String* line = string_create();
+	String* line_cpy = string_create();
     int counter = 0;
 
     int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
@@ -159,14 +161,13 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
     KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
     while (parse_line(fh, line)){
         for (int i = 0; i < kinds_of_calculations; i++){
-			String* line_cpy = string_create_copy(line);
+			string_copy(line_cpy, line);
             int j = indices[i];
 			krp = kraken_fill(krp, line_cpy);
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
                 kmfs[i] = kmf_calculate(krp);
             }
-			string_destroy(line_cpy);
         }
         if (krp->taxid > 0){
             if ((flags & FILTER) && !(flags & BOTH_SCORES)){
@@ -192,6 +193,8 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
 		string_reset(line);
     }
 
+	string_destroy(line_cpy);
+	string_destroy(line);
     kraken_destroy(krp);
     return;
 }

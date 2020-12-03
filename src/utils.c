@@ -37,6 +37,20 @@ String* string_create_copy(String* str)
     return cpy;
 }
 
+void string_copy(String* dst, String const* const src)
+{
+	if (src->capacity > dst->capacity){
+		dst->str = realloc(dst->str, sizeof(*src->str)*src->capacity);
+		dst->capacity = src->capacity;
+	}
+	memcpy(dst->str, src->str, sizeof(*src->str)*src->size+1);
+	dst->size = src->size;
+	if (dst->str[dst->size] != '\0'){
+		fprintf(stderr, "WARNING! Copying String without \\0 terminator\n");
+	}
+	return;
+}
+
 void string_destroy(String* s)
 {
 	s->size = 0;	
