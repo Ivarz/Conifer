@@ -1,7 +1,5 @@
 conifer : src/main.c src/utils.c src/kraken_stats.c src/kraken_taxo.c
 	gcc -std=c99 -Wall -Wextra -O3 -D_POSIX_C_SOURCE=200809L -I third_party/uthash/src -I . src/utils.c src/kraken_stats.c src/kraken_taxo.c src/main.c -o conifer -lm -lz
-#conifer : src/main.c src/kraken_stats.c src/kraken_taxo.c
-	#g++ -Wall -Wextra -O3 -I third_party/uthash/src -I . src/kraken_stats.c src/kraken_taxo.c src/main.c -o conifer -lm -lz
 
 tests : test/tests.c src/kraken_stats.c src/kraken_taxo.c
 	cmake third_party/Unity/CMakeLists.txt
