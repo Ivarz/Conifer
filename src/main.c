@@ -59,14 +59,18 @@ void print_output(char const* const line, size_t const kmfn, KmerFractions kmfs[
 
 void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 {
-    char line[LINE_SIZE] = {0};
-    char line_to_parse[LINE_SIZE] = {0};
+    /*char line[LINE_SIZE] = {0};*/
+    /*char line_to_parse[LINE_SIZE] = {0};*/
+	String* line = string_create();
+	String* line_cpy = string_create();
+
     int counter = 0;
     int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
 
     int indices[kinds_of_calculations];
 
     if (flags & BOTH_SCORES){
+        indices[0] = 0;
         indices[1] = 1;
     } else if (flags & RTL){
         indices[0] = 1;
@@ -77,31 +81,31 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     KrakenRec* krp = kraken_create(true);
     TaxIdData* txds[2] = {txd_create(), txd_create()};
 
-    KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while (gzgets(fh, line, sizeof(line))){
-        for (int i = 0; i < kinds_of_calculations; i++){
-            int j = indices[i];
-            memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
-            krp = kraken_fill(krp, line_to_parse);
-            if (krp->taxid > 0){
-                krp = tax_adj_fp[j](krp, tx);
-                KmerFractions kmf = kmf_calculate(krp);
-                txd_add_data(txds[i], krp->taxid, kmf.avg_kmer_frac);
-            }
-            krp = kraken_reset(krp);
-        }
-        if (!(counter % 1000000) && counter){
-            fprintf(stderr, "%d lines processed...\n", counter);
-        }
-        counter++;
-		memset(line, 0, LINE_SIZE);
+	KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
+    while (parse_line(fh, line)){
+		for (int i = 0; i < kinds_of_calculations; i++){
+			string_copy(line_cpy, line);
+			int j = indices[i];
+			krp = kraken_fill(krp, line_cpy);
+			if (krp->taxid > 0){
+				krp = tax_adj_fp[j](krp, tx);
+				KmerFractions kmf = kmf_calculate(krp);
+				txd_add_data(txds[i], krp->taxid, kmf.avg_kmer_frac);
+			}
+			krp = kraken_reset(krp);
+		}
+		if (!(counter % 1000000) && counter){
+			fprintf(stderr, "\r%d lines processed...", counter);
+			fflush(stderr);
+		}
+		counter++;
+		string_reset(line);
     }
     if (flags & BOTH_SCORES){
         printf("taxon_name\ttaxid\treads\tP25_conf\tP50_conf\tP75_conf\tP25_rtl\tP50_rtl\tP75_rtl\n");
         for (int i=0; i < txds[0]->taxid_size; i++){
             Quartiles qs1 = get_quartiles(txds[0]->data[i]);
             Quartiles qs2 = get_quartiles(txds[1]->data[i]);
-			/*printf("%lu %lu\n",txds[0]->taxids[i],  txds[1]->taxids[i]);*/
             assert(txds[0]->taxids[i] == txds[1]->taxids[i]);
             assert(fh_sum(txds[0]->data[i]) == fh_sum(txds[1]->data[i]));
             printf("%s\t%lu\t%ld\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n"
@@ -126,20 +130,25 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     txd_destroy(txds[0]);
     txd_destroy(txds[1]);
     kraken_destroy(krp);
+	string_destroy(line_cpy);
+	string_destroy(line);
 
     return;
 }
 
 void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, float filter_threshold)
 {
-    char line[LINE_SIZE] = {0};
-    char line_to_parse[LINE_SIZE] = {0};
+    /*char line[LINE_SIZE] = {0};*/
+    /*char line_to_parse[LINE_SIZE] = {0};*/
+	String* line = string_create();
+	String* line_cpy = string_create();
     int counter = 0;
 
     int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
     int indices[kinds_of_calculations];
 
     if (flags & BOTH_SCORES){
+        indices[0] = 0;
         indices[1] = 1;
     } else if (flags & RTL){
         indices[0] = 1;
@@ -151,42 +160,43 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
     KmerFractions kmfs[2];
 
     KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while (gzgets(fh, line, sizeof(line))){
+    while (parse_line(fh, line)){
         for (int i = 0; i < kinds_of_calculations; i++){
+			string_copy(line_cpy, line);
             int j = indices[i];
-            memcpy(line_to_parse, line, sizeof(*line)*LINE_SIZE);
-            krp = kraken_fill(krp, line_to_parse);
+			krp = kraken_fill(krp, line_cpy);
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
                 kmfs[i] = kmf_calculate(krp);
             }
         }
         if (krp->taxid > 0){
-            line[strnlen(line, LINE_SIZE) -1] = '\0';
             if ((flags & FILTER) && !(flags & BOTH_SCORES)){
                 if (kmfs[0].avg_kmer_frac >= filter_threshold){
-                    print_output(line, kinds_of_calculations, kmfs);
+                    print_output(line->str, kinds_of_calculations, kmfs);
                 }
             } else {
-                print_output(line, kinds_of_calculations, kmfs);
+                print_output(line->str, kinds_of_calculations, kmfs);
             }
         } else if(flags & ALL_RECORDS){
-            line[strnlen(line, LINE_SIZE) -1] = '\0';
             kmfs[0].paired = krp->paired;
             kmfs[0].read1_kmer_frac = 0.0f;
             kmfs[0].read2_kmer_frac = 0.0f;
             kmfs[0].avg_kmer_frac = 0.0f;
             kmfs[1] = kmfs[0];
-            print_output(line, kinds_of_calculations, kmfs);
+            print_output(line->str, kinds_of_calculations, kmfs);
         }
         if (!(counter % 1000000) && counter){
-            fprintf(stderr, "%d lines processed...\n", counter);
+            fprintf(stderr, "\r%d lines processed...", counter);
+			fflush(stderr);
         }
         counter++;
         krp = kraken_reset(krp);
-		memset(line, 0, LINE_SIZE);
+		string_reset(line);
     }
 
+	string_destroy(line_cpy);
+	string_destroy(line);
     kraken_destroy(krp);
     return;
 }

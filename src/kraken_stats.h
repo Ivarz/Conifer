@@ -9,6 +9,7 @@
 #include <math.h>
 #include <limits.h>
 #include "src/kraken_taxo.h"
+#include "src/utils.h"
 
 #define KMER_COUNT_SIZE 1024
 #define TAXID_KMER_DATA_SIZE 1024
@@ -53,7 +54,7 @@ struct KrakenRec
 };
 
 KrakenRec* kraken_create(bool paired);
-KrakenRec* kraken_fill(KrakenRec* krp, char* kraken_line);
+KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str);
 void kraken_print(KrakenRec* krp);
 KrakenRec* kraken_reset(KrakenRec* krp);
 void kraken_destroy(KrakenRec* krp);
