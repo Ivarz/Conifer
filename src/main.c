@@ -95,7 +95,8 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 			krp = kraken_reset(krp);
 		}
 		if (!(counter % 1000000) && counter){
-			fprintf(stderr, "%d lines processed...\n", counter);
+			fprintf(stderr, "\r%d lines processed...", counter);
+			fflush(stderr);
 		}
 		counter++;
 		string_reset(line);
@@ -186,7 +187,8 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
             print_output(line->str, kinds_of_calculations, kmfs);
         }
         if (!(counter % 1000000) && counter){
-            fprintf(stderr, "%d lines processed...\n", counter);
+            fprintf(stderr, "\r%d lines processed...", counter);
+			fflush(stderr);
         }
         counter++;
         krp = kraken_reset(krp);
