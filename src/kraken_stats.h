@@ -10,6 +10,7 @@
 #include <limits.h>
 #include "src/kraken_taxo.h"
 #include "src/utils.h"
+#include "src/error_type.h"
 
 #define KMER_COUNT_SIZE 1024
 #define TAXID_KMER_DATA_SIZE 1024
@@ -36,7 +37,7 @@ struct KmerCounts
 
 KmerCounts* kmc_create(void);
 KmerCounts* kmc_reset(KmerCounts* kc);
-KmerCounts* kmc_fill(KmerCounts* kc, char* str);
+KmerCounts* kmc_fill(KmerCounts* const kc, char* str);
 //void kmc_copy(KmerCounts const* const src, KmerCounts* const dst);
 void kmc_destroy(KmerCounts* kc);
 
@@ -54,7 +55,7 @@ struct KrakenRec
 };
 
 KrakenRec* kraken_create(bool paired);
-KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str);
+ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str);
 void kraken_print(KrakenRec* krp);
 KrakenRec* kraken_reset(KrakenRec* krp);
 void kraken_destroy(KrakenRec* krp);

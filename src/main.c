@@ -1,4 +1,5 @@
 #include "src/kraken_stats.h"
+#include "src/error_type.h"
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
@@ -57,7 +58,7 @@ void print_output(char const* const line, size_t const kmfn, KmerFractions kmfs[
     return;
 }
 
-void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
+ErrorType gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
 {
     /*char line[LINE_SIZE] = {0};*/
     /*char line_to_parse[LINE_SIZE] = {0};*/
@@ -82,11 +83,15 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     TaxIdData* txds[2] = {txd_create(), txd_create()};
 
 	KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while (parse_line(fh, line)){
+	ErrorType parsing_status = Success;
+    while (parse_line(fh, line) && parsing_status == Success){
 		for (int i = 0; i < kinds_of_calculations; i++){
 			string_copy(line_cpy, line);
 			int j = indices[i];
-			krp = kraken_fill(krp, line_cpy);
+			parsing_status = kraken_fill(krp, line_cpy);
+			if (parsing_status != Success){
+				break;
+			}
 			if (krp->taxid > 0){
 				krp = tax_adj_fp[j](krp, tx);
 				KmerFractions kmf = kmf_calculate(krp);
@@ -129,20 +134,20 @@ void gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flags)
     }
     txd_destroy(txds[0]);
     txd_destroy(txds[1]);
-    kraken_destroy(krp);
+	kraken_destroy(krp);
 	string_destroy(line_cpy);
 	string_destroy(line);
 
-    return;
+    return parsing_status;
 }
 
-void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, float filter_threshold)
+ErrorType print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, float filter_threshold)
 {
     /*char line[LINE_SIZE] = {0};*/
     /*char line_to_parse[LINE_SIZE] = {0};*/
 	String* line = string_create();
 	String* line_cpy = string_create();
-    int counter = 0;
+    int counter = 1;
 
     int const kinds_of_calculations = (flags & BOTH_SCORES) ? 2 : 1;
     int indices[kinds_of_calculations];
@@ -160,11 +165,16 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
     KmerFractions kmfs[2];
 
     KrakenRec* (*tax_adj_fp[2])(KrakenRec*, Taxonomy const* const) = {kraken_adjust_taxonomy, kraken_adjust_taxonomy_rtl};
-    while (parse_line(fh, line)){
+	ErrorType parsing_status = Success;
+    while (parse_line(fh, line) && parsing_status == Success){
         for (int i = 0; i < kinds_of_calculations; i++){
 			string_copy(line_cpy, line);
             int j = indices[i];
-			krp = kraken_fill(krp, line_cpy);
+			parsing_status = kraken_fill(krp, line_cpy);
+			if (parsing_status != Success){
+				fprintf(stderr, "Malformed input at line %d\n", counter);
+				break;
+			}
             if (krp->taxid > 0){
                 krp = tax_adj_fp[j](krp, tx);
                 kmfs[i] = kmf_calculate(krp);
@@ -197,8 +207,8 @@ void print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, floa
 
 	string_destroy(line_cpy);
 	string_destroy(line);
-    kraken_destroy(krp);
-    return;
+	kraken_destroy(krp);
+    return parsing_status;
 }
 
 int main(int argc, char* argv[argc])
@@ -289,14 +299,19 @@ int main(int argc, char* argv[argc])
         return EXIT_FAILURE;
     }
 
+	int exit_status = EXIT_FAILURE;
     if (flags & SUMMARY){
-        gather_and_print_summary(fh, tx, flags);
+        if (gather_and_print_summary(fh, tx, flags)){
+			exit_status = EXIT_SUCCESS;
+		}
     } else {
-        print_scores_by_record(fh, tx, flags, filter_threshold);
+        if(print_scores_by_record(fh, tx, flags, filter_threshold)){
+			exit_status = EXIT_SUCCESS;
+		}
     }
     tx_destroy(tx);
     gzclose(fh);
     free(file_name);
     free(db_name);
-    return EXIT_SUCCESS;
+    return exit_status;
 }

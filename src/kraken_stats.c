@@ -158,14 +158,14 @@ uint64_t extract_taxid(char const* const taxid_field)
 	return taxid;
 }
 
-KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str)
+ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
 {
 	char* kraken_line = kraken_str->str;
     if (!strcmp(kraken_line,"")){
-        return kraken_reset(krp);
+        return ParseFail;
     }
     if (kraken_line[0] == 'U'){
-        return kraken_reset(krp);
+        return Success;
     }
     krp->paired = paired_end_data(kraken_str);
     if (krp->paired){
@@ -189,6 +189,10 @@ KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str)
             !strcmp(kmer_pairs_str1,":") ? 1 : 3;
 		/*printf("end %s\n", __func__);*/
         char* kmer_pairs_str2 = strtok(0, "\n") + offset;
+
+		if (!(read_name && tax_field && read1_len && kmer_pairs_str1 && kmer_pairs_str2)){
+			return ParseFail;
+		}
 		/*printf("%s\n", kmer_pairs_str2);*/
 
 		/*printf("%s\n", class_field);*/
@@ -215,13 +219,16 @@ KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str)
         krp->read1_kmers = kmc_fill(krp->read1_kmers, kmer_pairs_str1);
         krp->read2_kmers = kmc_fill(krp->read2_kmers, kmer_pairs_str2);
 		/*printf("end kmc_fill\n");*/
-        return krp;
+        return Success;
     } else {
         char* class_field = strtok(kraken_line, "\t");
         char* read_name = strtok(0, "\t");
         char* tax_field = strtok(0, "\t");
         char* read1_len = strtok(0, "\t");
         char* kmer_str = strtok(0, "\n");
+		if (!(read_name && tax_field && read1_len && kmer_str)){
+			return ParseFail;
+		}
 
         krp->classified = class_field[0] == 'C' ? true : false;
         krp->read_name = read_name;
@@ -231,7 +238,7 @@ KrakenRec* kraken_fill(KrakenRec* krp, String* kraken_str)
         krp->read1_len = strtoul(read1_len, (void*)0, 10);
         check_ulong_overflow(krp->read1_len);
         krp->read1_kmers = kmc_fill(krp->read1_kmers, kmer_str);
-        return krp;
+        return Success;
     }
 }
 
