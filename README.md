@@ -17,6 +17,9 @@ To build tests use
 make tests
 ```
 
+## Building docker image
+To build docker image follow instructions at [conifer-docker](https://github.com/Midnighter/conifer-docker) (thanks to [@Midnighter](https://github.com/Midnighter)).
+
 # Basic usage
 To use this tool you need standard output file from [kraken2](https://github.com/DerrickWood/kraken2) and taxonomy database file (`taxo.k2d`).
 The following command will calculate confidence score for each classified read. Note that this kind of output does not include header. For paired end reads confidence score for both reads and the average of the two reads is reported. Only classified reads are reported by default.
