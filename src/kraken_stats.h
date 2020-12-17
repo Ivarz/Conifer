@@ -37,7 +37,7 @@ struct KmerCounts
 
 KmerCounts* kmc_create(void);
 KmerCounts* kmc_reset(KmerCounts* kc);
-KmerCounts* kmc_fill(KmerCounts* const kc, char* str);
+ErrorType kmc_fill(KmerCounts* const kc, char* str);
 //void kmc_copy(KmerCounts const* const src, KmerCounts* const dst);
 void kmc_destroy(KmerCounts* kc);
 

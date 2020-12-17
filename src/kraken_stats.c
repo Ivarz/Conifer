@@ -44,11 +44,11 @@ KmerCounts* kmc_extend(KmerCounts* kc, size_t new_size)
 }
 
 
-KmerCounts* kmc_fill(KmerCounts* kc, char* str)
+ErrorType kmc_fill(KmerCounts* kc, char* str)
 {
     if (!strcmp(str, "") || !strcmp(str,":")){
         kc = kmc_reset(kc);
-        return kc;
+        return Success;
     }
     char* taxid_str = strtok(str,":");
     char* count_str = strtok(0," ");
@@ -74,7 +74,7 @@ KmerCounts* kmc_fill(KmerCounts* kc, char* str)
         count_str = strtok(0," ");
     }
     kc->size = i;
-    return kc;
+    return Success;
 }
 
 /*void kmc_copy(KmerCounts const* const src, KmerCounts* const dst)*/
@@ -176,32 +176,14 @@ ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
         char* read2_len = strtok(0, "\t");
         char* kmer_pairs_str = strtok(0, "\t");
         char* kmer_pairs_str1 = strtok(kmer_pairs_str, "|");
-        //if missing kmer_pairs_str1 adjust offest for second read kmers
-		/*printf("start %s\n", __func__);*/
-		/*printf("%s\n", class_field);*/
-		/*printf("%s\n", read_name);*/
-		/*printf("%s\n", tax_field);*/
-		/*printf("%s\n", read1_len);*/
-		/*printf("%s\n", read2_len);*/
-		/*printf("%s\n", kmer_pairs_str1);*/
         int offset =
             !strcmp(kmer_pairs_str1,"") ? 3 :
             !strcmp(kmer_pairs_str1,":") ? 1 : 3;
-		/*printf("end %s\n", __func__);*/
         char* kmer_pairs_str2 = strtok(0, "\n") + offset;
 
 		if (!(read_name && tax_field && read1_len && kmer_pairs_str1 && kmer_pairs_str2)){
 			return ParseFail;
 		}
-		/*printf("%s\n", kmer_pairs_str2);*/
-
-		/*printf("%s\n", class_field);*/
-		/*printf("%s\n", read_name);*/
-		/*printf("%s\n", tax_field);*/
-		/*printf("%s\n", read1_len);*/
-		/*printf("%s\n", read2_len);*/
-		/*printf("%s\n", kmer_pairs_str1);*/
-		/*printf("%s\n", kmer_pairs_str2);*/
 
         krp->classified = class_field[0] == 'C' ? true : false;
         krp->read_name = read_name;
@@ -216,8 +198,8 @@ ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
 
 
 		/*printf("start kmc_fill\n");*/
-        krp->read1_kmers = kmc_fill(krp->read1_kmers, kmer_pairs_str1);
-        krp->read2_kmers = kmc_fill(krp->read2_kmers, kmer_pairs_str2);
+        kmc_fill(krp->read1_kmers, kmer_pairs_str1);
+        kmc_fill(krp->read2_kmers, kmer_pairs_str2);
 		/*printf("end kmc_fill\n");*/
         return Success;
     } else {
@@ -237,7 +219,7 @@ ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
 
         krp->read1_len = strtoul(read1_len, (void*)0, 10);
         check_ulong_overflow(krp->read1_len);
-        krp->read1_kmers = kmc_fill(krp->read1_kmers, kmer_str);
+        kmc_fill(krp->read1_kmers, kmer_str);
         return Success;
     }
 }
