@@ -15,24 +15,24 @@
 #define KMER_COUNT_SIZE 1024
 #define TAXID_KMER_DATA_SIZE 1024
 
-inline
+	inline
 void check_ulong_overflow(uint64_t value)
 {
-    if (value == ULLONG_MAX && errno == ERANGE){
-        fprintf(stderr, "CRITICAL_ERROR: value bigger than %lu\n", ULONG_MAX);
-        exit(1);
-    }
-    return;
+	if (value == ULLONG_MAX && errno == ERANGE){
+		fprintf(stderr, "CRITICAL_ERROR: value bigger than %lu\n", ULONG_MAX);
+		exit(1);
+	}
+	return;
 }
 
 
 typedef struct KmerCounts KmerCounts;
 struct KmerCounts
 {
-    size_t size;
-    size_t capacity;
-    uint64_t* taxids;
-    uint64_t* counts;
+	size_t size;
+	size_t capacity;
+	uint64_t* taxids;
+	uint64_t* counts;
 };
 
 KmerCounts* kmc_create(void);
@@ -44,14 +44,14 @@ void kmc_destroy(KmerCounts* kc);
 typedef struct KrakenRec KrakenRec;
 struct KrakenRec
 {
-    bool paired;
-    bool classified;
-    char* read_name;
-    uint64_t taxid;
-    uint64_t read1_len;
-    uint64_t read2_len;
-    KmerCounts* read1_kmers;
-    KmerCounts* read2_kmers;
+	bool paired;
+	bool classified;
+	char* read_name;
+	uint64_t taxid;
+	uint64_t read1_len;
+	uint64_t read2_len;
+	KmerCounts* read1_kmers;
+	KmerCounts* read2_kmers;
 };
 
 KrakenRec* kraken_create(bool paired);
@@ -63,9 +63,9 @@ void kraken_destroy(KrakenRec* krp);
 typedef struct FloatHist FloatHist;
 struct FloatHist
 {
-    size_t size;
-    size_t capacity;
-    int32_t* fraction_counts;
+	size_t size;
+	size_t capacity;
+	int32_t* fraction_counts;
 };
 
 FloatHist* fh_create();
@@ -76,10 +76,10 @@ void fh_print(FloatHist* fh);
 typedef struct TaxIdData TaxIdData;
 struct TaxIdData
 {
-    int32_t taxid_size;
-    int32_t taxid_capacity;
-    uint64_t* taxids;
-    FloatHist** data;
+	int32_t taxid_size;
+	int32_t taxid_capacity;
+	uint64_t* taxids;
+	FloatHist** data;
 };
 
 TaxIdData* txd_create();
@@ -102,9 +102,9 @@ struct KmerFractions
 typedef struct Quartiles Quartiles;
 struct Quartiles
 {
-    float q1;
-    float q2;
-    float q3;
+	float q1;
+	float q2;
+	float q3;
 };
 
 int64_t fh_sum(FloatHist* fh);
