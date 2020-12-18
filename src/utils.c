@@ -6,12 +6,12 @@
 String* string_create(void)
 {     
 	String* str = malloc(sizeof(*str));
-    char* content = malloc(sizeof(*content)*4096);
+	char* content = malloc(sizeof(*content)*4096);
 	str->capacity = 4096;
 	str->size = 0;
 	str->str = content;
 	memset(str->str, 0, sizeof(*str->str)*str->capacity);
-    return str;
+	return str;
 }
 
 String* string_create_from(char* s)
@@ -34,7 +34,7 @@ String* string_create_copy(String* str)
 	cpy->size = str->size;
 	cpy->str = malloc(sizeof(*str->str)*str->capacity);
 	cpy->str = strncpy(cpy->str, str->str, sizeof(*str->str)*str->capacity);
-    return cpy;
+	return cpy;
 }
 
 void string_copy(String* dst, String const* const src)
