@@ -1,5 +1,5 @@
 #ifndef ERROR_TYPE
 #define ERROR_TYPE
 typedef enum ErrorType ErrorType;
-enum ErrorType {ParseFail, Success};
+enum ErrorType {ParseFail, ReallocFail, Success};
 #endif

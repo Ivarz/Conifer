@@ -61,6 +61,7 @@ ErrorType kmc_fill(KmerCounts* kc, char* str)
             kc = kmc_extend(kc, kc->capacity);
             if (kc == 0){
                 fprintf(stderr, "Failed to extend kmc at line %d", __LINE__);
+				return ReallocFail;
             }
         }
         if (taxid_str[0] != 'A'){
@@ -198,10 +199,12 @@ ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
 
 
 		/*printf("start kmc_fill\n");*/
-        kmc_fill(krp->read1_kmers, kmer_pairs_str1);
-        kmc_fill(krp->read2_kmers, kmer_pairs_str2);
-		/*printf("end kmc_fill\n");*/
-        return Success;
+        if (kmc_fill(krp->read1_kmers, kmer_pairs_str1) == Success
+			&& kmc_fill(krp->read2_kmers, kmer_pairs_str2) == Success){
+			return Success;
+		} else {
+			return ReallocFail;
+		}
     } else {
         char* class_field = strtok(kraken_line, "\t");
         char* read_name = strtok(0, "\t");
@@ -214,13 +217,12 @@ ErrorType kraken_fill(KrakenRec* const krp, String* kraken_str)
 
         krp->classified = class_field[0] == 'C' ? true : false;
         krp->read_name = read_name;
-        krp->taxid = strtoul(tax_field, (void*)0, 10);
+        krp->taxid = extract_taxid(tax_field);
         check_ulong_overflow(krp->taxid);
 
         krp->read1_len = strtoul(read1_len, (void*)0, 10);
         check_ulong_overflow(krp->read1_len);
-        kmc_fill(krp->read1_kmers, kmer_str);
-        return Success;
+        return kmc_fill(krp->read1_kmers, kmer_str);
     }
 }
 

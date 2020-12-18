@@ -141,6 +141,21 @@ ErrorType gather_and_print_summary(gzFile fh, Taxonomy const* const tx, int flag
     return parsing_status;
 }
 
+void print_error(ErrorType e, int i)
+{
+	switch (e) {
+		case ParseFail:
+			fprintf(stderr, "Malformed input at line %d\n", i);
+			break;
+		case ReallocFail:
+			fprintf(stderr, "Memory reallocation failure at line %d\n", i);
+			break;
+		default:
+			break;
+	}
+	return;
+}
+
 ErrorType print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags, float filter_threshold)
 {
     /*char line[LINE_SIZE] = {0};*/
@@ -172,7 +187,7 @@ ErrorType print_scores_by_record(gzFile fh, Taxonomy const* const tx, int flags,
             int j = indices[i];
 			parsing_status = kraken_fill(krp, line_cpy);
 			if (parsing_status != Success){
-				fprintf(stderr, "Malformed input at line %d\n", counter);
+				print_error(parsing_status, counter);
 				break;
 			}
             if (krp->taxid > 0){

@@ -9,7 +9,7 @@ void test_kmc_create_empty(void)
 {
     char str[] = "";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     TEST_ASSERT_NOT_NULL(kc);
     TEST_ASSERT_EQUAL(kc->size, 0);
     kmc_destroy(kc);
@@ -20,7 +20,7 @@ void test_kmc_create_pe_not_empty(void)
 
     char str[] = "1:3 2:3 4:5";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     TEST_ASSERT_NOT_NULL(kc);
     kmc_destroy(kc);
 }
@@ -29,7 +29,7 @@ void test_kmc_create_pe_size_3(void)
 {
     char str[] = "1:3 2:3 4:5";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     TEST_ASSERT_EQUAL(kc->size, 3);
     kmc_destroy(kc);
 }
@@ -38,7 +38,7 @@ void test_kmc_create_ambiguous(void)
 {
     char str[] = "1:3 2:3 4:5 A:4";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     TEST_ASSERT_EQUAL(kc->size, 3);
     kmc_destroy(kc);
 }
@@ -47,7 +47,7 @@ void test_kmc_create_pe_size_1(void)
 {
     char str[] = "4:5";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     TEST_ASSERT_EQUAL(kc->size, 1);
     kmc_destroy(kc);
 }
@@ -56,7 +56,7 @@ void test_kmc_size_3_sum_11(void)
 {
     char str[] = "1:3 2:3 4:5";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     int sum = 0;
     for (int i = 0; i < kc->size; i++){
         sum += kc->counts[i];
@@ -69,7 +69,7 @@ void test_kmc_create_pe_reset_size_0()
 {
     char str[] = "1:3 2:3 4:5";
     KmerCounts* kc = kmc_create();
-    kc = kmc_fill(kc, str);
+    kmc_fill(kc, str);
     kc = kmc_reset(kc);
     TEST_ASSERT_EQUAL(kc->size, 0);
     kmc_destroy(kc);
@@ -79,7 +79,7 @@ void test_kraken_empty()
 {
     String* str = string_create_from("");
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     /*char empty_str[] = "";*/
     TEST_ASSERT_EQUAL(krp->classified, false);
     TEST_ASSERT_EQUAL_STRING(krp->read_name, "");
@@ -97,7 +97,7 @@ void test_kraken_fill_normal()
     char s[] = "C\tV100006845L1C001R001118987\t1357\t94|94\t1300:29 1357:26 0:5 |:| 1357:5 0:13 1357:3 0:15 1300:24";
     String* str = string_create_from(s);
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     TEST_ASSERT_EQUAL(krp->classified, true);
     TEST_ASSERT_EQUAL_STRING(krp->read_name, "V100006845L1C001R001118987");
     TEST_ASSERT_EQUAL(krp->taxid, 1357);
@@ -114,7 +114,7 @@ void test_kraken_fill_read1_empty()
     char s[] = "C\tV100006845L1C001R001118987\t1357\t94|94\t |:| 1357:5 0:13 1357:3 0:15 1300:24";
     String* str = string_create_from(s);
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     TEST_ASSERT_EQUAL(krp->classified, true);
     TEST_ASSERT_EQUAL_STRING(krp->read_name, "V100006845L1C001R001118987");
     TEST_ASSERT_EQUAL(krp->taxid, 1357);
@@ -131,7 +131,7 @@ void test_kraken_fill_read2_empty()
     char s[] = "C\tV100006845L1C001R001118987\t1357\t94|94\t1300:29 1357:26 0:5 |:|";
     String* str = string_create_from(s);
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     TEST_ASSERT_EQUAL(krp->classified, true);
     TEST_ASSERT_EQUAL_STRING(krp->read_name, "V100006845L1C001R001118987");
     TEST_ASSERT_EQUAL(krp->taxid, 1357);
@@ -148,7 +148,7 @@ void test_kraken_fill_taxid_overflow()
     char s[] = "C\tV100006845L1C001R001118987\t999999999999999999999\t94|94\t1300:29 1357:26 0:5 |:| 1357:5 0:13 1357:3 0:15 1300:24";
     String* str = string_create_from(s);
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     TEST_ASSERT_EQUAL(krp->classified, true);
     TEST_ASSERT_EQUAL_STRING(krp->read_name, "V100006845L1C001R001118987");
     TEST_ASSERT_EQUAL(krp->taxid, 1);
@@ -166,7 +166,7 @@ void test_kraken_reset()
     char s[] = "C\tV100006845L1C001R001118987\t10\t94|94\t1300:29 1357:26 0:5 |:| 1357:5 0:13 1357:3 0:15 1300:24";
     String* str = string_create_from(s);
     KrakenRec* krp = kraken_create(true);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     krp = kraken_reset(krp);
     /*char empty_str[] = "";*/
     TEST_ASSERT_EQUAL(krp->classified, false);
@@ -230,7 +230,7 @@ void test_avg_kmer_fraction_pe()
     KrakenRec* krp = kraken_create(true);
     char l1[] = "C\tV300023792L1C001R0040001245\t1234\t150|118\t1234:100 0:300 |:| 1234:100 0:200";
     String* str = string_create_from(l1);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     TEST_ASSERT_EQUAL_FLOAT(avg_kmer_frac1, 0.2916667f);
 	string_destroy(str);
@@ -241,7 +241,7 @@ void test_avg_kmer_fraction_r1_missing_space()
     KrakenRec* krp = kraken_create(true);
     char l1[] = "C\tV300023792L1C001R0040001245\t1234\t150|118\t |:| 1234:100 0:200";
     String* str = string_create_from(l1);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     TEST_ASSERT_EQUAL_FLOAT(avg_kmer_frac1, 1.0f/3.0f);
     kraken_destroy(krp);
@@ -253,7 +253,7 @@ void test_avg_kmer_fraction_r1_missing_no_space()
     KrakenRec* krp = kraken_create(true);
     char l1[] = "C\tV300023792L1C001R0040001245\t1234\t150|118\t|:| 1234:100 0:200";
     String* str = string_create_from(l1);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     TEST_ASSERT_EQUAL_FLOAT(avg_kmer_frac1, 1.0f/3.0f);
 	string_destroy(str);
@@ -265,7 +265,7 @@ void test_avg_kmer_fraction_r2_missing_space()
     KrakenRec* krp = kraken_create(true);
     char l1[] = "C\tV300023792L1C001R0040001245\t1234\t150|118\t1234:100 0:300 |:| ";
     String* str = string_create_from(l1);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     TEST_ASSERT_EQUAL_FLOAT(avg_kmer_frac1, 0.25f);
     kraken_destroy(krp);
@@ -277,7 +277,7 @@ void test_avg_kmer_fraction_r2_missing_no_space()
     KrakenRec* krp = kraken_create(true);
     char l1[] = "C\tV300023792L1C001R0040001245\t1234\t150|118\t1234:100 0:300 |:|";
     String* str = string_create_from(l1);
-    krp = kraken_fill(krp, str);
+    kraken_fill(krp, str);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     TEST_ASSERT_EQUAL_FLOAT(avg_kmer_frac1, 0.25f);
     kraken_destroy(krp);
@@ -456,19 +456,19 @@ void test_quartiles()
     String* str1 = string_create_from(l1);
     String* str2 = string_create_from(l2);
     String* str3 = string_create_from(l3);
-    krp = kraken_fill(krp, str1);
+    kraken_fill(krp, str1);
     float avg_kmer_frac1 = get_avg_kmer_fraction(krp);
     //0.2916667f
     txd_add_data(txd, krp->taxid, avg_kmer_frac1);
     krp = kraken_reset(krp);
 
-    krp = kraken_fill(krp, str2);
+    kraken_fill(krp, str2);
     float avg_kmer_frac2 = get_avg_kmer_fraction(krp);
     //0.45f
     txd_add_data(txd, krp->taxid, avg_kmer_frac2);
     krp = kraken_reset(krp);
 
-    krp = kraken_fill(krp, str3);
+    kraken_fill(krp, str3);
     float avg_kmer_frac3 = get_avg_kmer_fraction(krp);
     //0.75f
     txd_add_data(txd, krp->taxid, avg_kmer_frac3);
