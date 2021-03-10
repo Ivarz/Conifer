@@ -89,3 +89,8 @@ and simultaneous reporting of both scores:
 |Anaerobutyricum hallii  | 39488   | 1    |    0.5000  | 0.5000  | 0.5000  | 0.5000  | 0.5000  | 0.5000 |
 |Lachnospiraceae  |186803  | 1    |    0.5000  | 0.5000  | 0.5000  | 0.5000  | 0.5000  | 0.5000 |
 |Clostridiales   | 186802  | 3     |   0.4920  | 0.7200  | 1.0000  | 0.7200  | 1.0000  | 1.0000 |
+
+# Note on score calculation
+![](doc/score_scheme.png)
+
+Schematic representation of confidence and RTL score calculation from classification tree. White nodes represent the final assigned taxonomy. Numbers indicate read k-mer count assigned to a particular taxonomy. Confidence score is calculated as the fraction of k-mers assigned to the final taxonomy and its descendants, as denoted by the blue rectangle (left); RTL score is calculated from descendants and ascendants of the final taxonomy (right).
