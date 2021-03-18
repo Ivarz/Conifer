@@ -7,7 +7,7 @@
 
 #define MAJOR 1
 #define MINOR 0
-#define PATCH 2
+#define PATCH 3
 
 #define SUMMARY 1
 #define RTL (1 << 1)
@@ -15,6 +15,7 @@
 #define ALL_RECORDS (1 << 3)
 #define FILTER (1 << 4)
 #define SHOW_VERSION (1 << 5)
+#define SHOW_HELP (1 << 6)
 
 void print_usage(void)
 {
@@ -28,6 +29,7 @@ void print_usage(void)
 	fprintf(stderr, "\t-f,--filter\t\tfilter kraken file by confidence score\n");
 	fprintf(stderr, "\t-r,--rtl\t\treport root-to-leaf score instead of confidence score\n");
 	fprintf(stderr, "\t-b,--both_scores\treport confidence and root-to-leaf score\n");
+	fprintf(stderr, "\t-h,--help\t\tprint this message\n");
 	fprintf(stderr, "\t-v,--version\t\tshow version\n");
 	fprintf(stderr, "\n");
 
@@ -232,13 +234,10 @@ int main(int argc, char* argv[argc])
 		, {"rtl", no_argument, 0, 'r'}
 		, {"filter", required_argument, 0, 'f'}
 		, {"both_scores", no_argument, 0, 'b'}
+		, {"help", no_argument, 0, 'h'}
 		, {"version", no_argument, 0, 'v'}
 
 	};
-	if (argc < 2){
-		print_usage();
-		return EXIT_FAILURE;
-	}
 	int opt;
 	char* file_name = 0;
 	char* db_name = 0;
@@ -246,7 +245,7 @@ int main(int argc, char* argv[argc])
 	int l_idx = 0;
 	float filter_threshold = -1.0f;
 	char* filter_threshold_str = 0;
-	while ((opt = getopt_long(argc, argv, "i:d:rbaspv", long_opts, &l_idx)) != -1){
+	while ((opt = getopt_long(argc, argv, "i:d:rbasphv", long_opts, &l_idx)) != -1){
 		switch (opt) {
 			case 'i':
 				file_name = strndup(optarg, 1024);
@@ -269,14 +268,26 @@ int main(int argc, char* argv[argc])
 			case 'v':
 				flags |= SHOW_VERSION;
 				break;
+			case 'h':
+				flags |= SHOW_HELP;
+				break;
 			case 'f':
 				filter_threshold_str = strndup(optarg, 1024);
 				flags |= FILTER;
 				break;
 		}
 	}
+
+	if (argc < 2){
+		print_usage();
+		return EXIT_FAILURE;
+	}
 	if (flags & SHOW_VERSION){
 		fprintf(stderr, "Conifer %d.%d.%d\n", MAJOR, MINOR, PATCH);
+		return EXIT_SUCCESS;
+	}
+	if (flags & SHOW_HELP){
+		print_usage();
 		return EXIT_SUCCESS;
 	}
 	if ((flags & ALL_RECORDS) && (flags & SUMMARY)){
@@ -295,6 +306,7 @@ int main(int argc, char* argv[argc])
 		filter_threshold = strtod(filter_threshold_str, 0);
 		free(filter_threshold_str);
 	}
+
 
 	gzFile fh = gzopen(file_name, "rb");
 
