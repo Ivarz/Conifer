@@ -245,7 +245,7 @@ int main(int argc, char* argv[argc])
 	int l_idx = 0;
 	float filter_threshold = -1.0f;
 	char* filter_threshold_str = 0;
-	while ((opt = getopt_long(argc, argv, "i:d:rbasphv", long_opts, &l_idx)) != -1){
+	while ((opt = getopt_long(argc, argv, "i:d:f:rbasphv", long_opts, &l_idx)) != -1){
 		switch (opt) {
 			case 'i':
 				file_name = strndup(optarg, 1024);
