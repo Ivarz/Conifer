@@ -118,12 +118,14 @@ KrakenRec* kraken_reset(KrakenRec* krp)
 
 bool paired_end_data(String* kraken_str)
 {
+	int n_tbs = 0;
 	bool paired = false;
 	/*printf("kraken_str->size %zu\n", kraken_str->size);*/
 	/*printf("kraken_str->str %s\n", kraken_str->str);*/
 	for (size_t i = 0; i < kraken_str->size; i++){
 		/*printf("%d\n",i);*/
-		if (kraken_str->str[i] == '|'){
+		n_tbs += kraken_str->str[i] == '\t';
+		if (kraken_str->str[i] == '|' && n_tbs > 2){
 			paired = true;
 			return paired;
 		}
